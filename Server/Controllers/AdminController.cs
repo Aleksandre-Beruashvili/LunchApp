@@ -1,8 +1,8 @@
-﻿using LunchApp.Shared.DTOs;
-using LunchApp.Server.Data;
-using Microsoft.AspNetCore.Authorization;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using LunchApp.Server.Data;
+using LunchApp.Shared.DTOs;
 
 namespace LunchApp.Server.Controllers
 {
@@ -45,11 +45,11 @@ namespace LunchApp.Server.Controllers
         }
 
         [HttpGet("orders")]
-        public async Task<IActionResult> GetAllOrders([FromQuery] DateTime date)
+        public async Task<IActionResult> GetOrders([FromQuery] DateTime date)
         {
             var orders = await _context.Orders
                 .Where(o => o.Date == date)
-                .Include(o => o.Items)
+                .Include(o => o.OrderItems)
                     .ThenInclude(i => i.Dish)
                 .ToListAsync();
             return Ok(orders);

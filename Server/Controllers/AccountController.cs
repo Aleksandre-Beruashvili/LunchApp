@@ -1,6 +1,6 @@
-﻿using LunchApp.Shared.DTOs;
-using Microsoft.AspNetCore.Identity;
+﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using LunchApp.Shared.DTOs;
 
 namespace LunchApp.Server.Controllers
 {
@@ -26,9 +26,7 @@ namespace LunchApp.Server.Controllers
 
             var user = new IdentityUser { UserName = dto.Email, Email = dto.Email };
             var result = await _userManager.CreateAsync(user, dto.Password);
-            if (!result.Succeeded)
-                return BadRequest(result.Errors);
-
+            if (!result.Succeeded) return BadRequest(result.Errors);
             await _userManager.AddToRoleAsync(user, "User");
             return Ok();
         }
@@ -37,8 +35,7 @@ namespace LunchApp.Server.Controllers
         public async Task<IActionResult> Login([FromBody] LoginDto dto)
         {
             var result = await _signInManager.PasswordSignInAsync(dto.Email, dto.Password, false, false);
-            if (!result.Succeeded)
-                return Unauthorized();
+            if (!result.Succeeded) return Unauthorized();
             return Ok();
         }
     }
