@@ -16,6 +16,11 @@ else
             <li><button @onclick="() => SelectTime(slot.Time)">🕒 @slot.Time (@slot.Count orders)</button></li>
         }
     </ul>
+    @if (!string.IsNullOrEmpty(selectedTime))
+    {
+        <p>Selected: @selectedTime</p>
+        <button @onclick="SubmitOrder">Submit Order</button>
+    }
 }
 
 @code {
