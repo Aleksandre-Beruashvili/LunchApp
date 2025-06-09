@@ -3,7 +3,10 @@
 
 <h3>Today's Menu</h3>
 
-@if (menu == null) <p>Loading...</p>
+@if (menu == null)
+{
+    <p>Loading...</p>
+}
 else
 {
     foreach (var dish in menu)
