@@ -49,7 +49,7 @@ namespace LunchApp.Server.Controllers
         {
             var orders = await _context.Orders
                 .Where(o => o.Date == date)
-                .Include(o => o.OrderItems)
+                .Include(o => o.Items)
                     .ThenInclude(i => i.Dish)
                 .ToListAsync();
             return Ok(orders);
