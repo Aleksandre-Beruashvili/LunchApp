@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using lunchapp.Models;
 
 namespace LunchApp.Shared.Models
 {

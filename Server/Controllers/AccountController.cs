@@ -1,5 +1,4 @@
-﻿using lunchapp.Shared.DTOs;
-using LunchApp.Shared.DTOs;
+﻿using LunchApp.Shared.DTOs;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 

@@ -1,6 +1,6 @@
 ﻿using System.Net.Http.Json;
-using lunchapp.Models;
-using lunchapp.Shared.DTOs;
+using LunchApp.Shared.Models;
+using LunchApp.Shared.DTOs;
 
 namespace LunchApp.Client.Services
 {
