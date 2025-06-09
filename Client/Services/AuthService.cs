@@ -1,5 +1,5 @@
 ﻿using System.Net.Http.Json;
-using lunchapp.Shared.DTOs;
+using LunchApp.Shared.DTOs;
 
 namespace LunchApp.Client.Services
 {
