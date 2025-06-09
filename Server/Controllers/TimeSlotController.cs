@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using LunchApp.Server.Data;
+using LunchApp.Shared.DTOs;
 
 namespace LunchApp.Server.Controllers
 {

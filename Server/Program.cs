@@ -1,4 +1,3 @@
-using lunchapp.Data;
 using LunchApp.Server.Data;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Builder;

@@ -1,4 +1,4 @@
-﻿namespace LunchApp.Shared.DTOs
+﻿namespace LunchApp.Shared.Models
 {
     public class TimeSlot
     {

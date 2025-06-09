@@ -1,5 +1,4 @@
-﻿using lunchapp.Models;
-using LunchApp.Shared.Models;
+﻿using LunchApp.Shared.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
