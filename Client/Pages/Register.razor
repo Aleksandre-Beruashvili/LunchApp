@@ -1,4 +1,4 @@
-﻿@page "/register"
+@page "/register"
 @inject AuthService AuthService
 @inject NavigationManager Nav
 
@@ -16,7 +16,7 @@
     async Task HandleRegister()
     {
         if (regModel.Password != regModel.ConfirmPassword) return;
-        var success = await AuthService.Register(regModel);
+        var success = await AuthService.Register(new RegisterDto { Email = regModel.Email, Password = regModel.Password });
         if (success) Nav.NavigateTo("/login");
         else Console.WriteLine("Register failed");
     }
