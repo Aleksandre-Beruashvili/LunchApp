@@ -1,4 +1,4 @@
-﻿@page "/login"
+@page "/login"
 @inject AuthService AuthService
 @inject NavigationManager Nav
 
@@ -11,12 +11,11 @@
 </EditForm>
 
 @code {
-    LoginModel loginModel = new();
+    LoginDto loginModel = new();
     async Task HandleLogin()
     {
         var success = await AuthService.Login(loginModel);
         if (success) Nav.NavigateTo("/menu");
         else Console.WriteLine("Login failed");
     }
-    public class LoginModel { public string Email { get; set; } public string Password { get; set; } }
 }
