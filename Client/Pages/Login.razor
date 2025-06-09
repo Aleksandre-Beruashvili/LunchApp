@@ -1,0 +1,22 @@
+﻿@page "/login"
+@inject AuthService AuthService
+@inject NavigationManager Nav
+
+<h3>Login</h3>
+
+<EditForm Model="loginModel" OnValidSubmit="HandleLogin">
+    <InputText @bind-Value="loginModel.Email" placeholder="Email" />
+    <InputText @bind-Value="loginModel.Password" type="password" placeholder="Password" />
+    <button type="submit">Login</button>
+</EditForm>
+
+@code {
+    LoginModel loginModel = new();
+    async Task HandleLogin()
+    {
+        var success = await AuthService.Login(loginModel);
+        if (success) Nav.NavigateTo("/menu");
+        else Console.WriteLine("Login failed");
+    }
+    public class LoginModel { public string Email { get; set; } public string Password { get; set; } }
+}

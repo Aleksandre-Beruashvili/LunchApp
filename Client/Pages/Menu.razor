@@ -1,0 +1,24 @@
+﻿@page "/menu"
+@inject ApiService Api
+
+<h3>Today's Menu</h3>
+
+@if (menu == null) <p>Loading...</p>
+else
+{
+    foreach (var dish in menu)
+    {
+        <div class="dish-card">
+            <h4>@dish.Name (₾@dish.Price)</h4>
+            <p>@dish.Description</p>
+        </div>
+    }
+}
+
+@code {
+    List<Dish> menu;
+    protected override async Task OnInitializedAsync()
+    {
+        menu = await Api.GetTodayMenu();
+    }
+}

@@ -1,0 +1,32 @@
+﻿@page "/order"
+@inject ApiService Api
+
+<h3>Place Order</h3>
+
+@if (timeSlots == null) <p>Loading slots...</p>
+else
+{
+    <p>Select a pickup time:</p>
+    <ul>
+        @foreach (var slot in timeSlots)
+        {
+            <li><button @onclick="() => SelectTime(slot.Time)">🕒 @slot.Time (@slot.Count orders)</button></li>
+        }
+    </ul>
+}
+
+@code {
+    List<TimeSlot> timeSlots;
+    string selectedTime;
+
+    protected override async Task OnInitializedAsync()
+    {
+        timeSlots = await Api.GetTimeSlots(DateTime.Today);
+    }
+    void SelectTime(string time) => selectedTime = time;
+    async Task SubmitOrder()
+    {
+        var dto = new OrderDto { UserId = 1, DishIds = new List<int> { 1 }, PickupTime = selectedTime, Date = DateTime.Today };
+        await Api.PlaceOrder(dto);
+    }
+}
