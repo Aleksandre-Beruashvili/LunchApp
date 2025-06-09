@@ -13,6 +13,12 @@ namespace LunchApp.Server.Data
         {
             modelBuilder.HasDefaultSchema("lunchapp");
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<IdentityRole>().HasData(
+              new IdentityRole { Name = "Admin", NormalizedName = "ADMIN" },
+              new IdentityRole { Name = "User", NormalizedName = "USER" }
+            );
+
         }
 
         public DbSet<Dish> Dishes { get; set; }
