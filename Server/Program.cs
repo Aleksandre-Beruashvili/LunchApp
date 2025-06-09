@@ -24,7 +24,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
 // MVC and Blazor
 builder.Services.AddControllersWithViews();
 builder.Services.AddRazorPages();
-builder.Services.AddBlazorFrameworkFiles();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
