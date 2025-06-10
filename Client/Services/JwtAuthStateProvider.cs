@@ -1,17 +1,16 @@
 using System.Security.Claims;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Components.Authorization;
-using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
+using Microsoft.JSInterop;
 
 namespace LunchApp.Client.Services
 {
     public class JwtAuthStateProvider : AuthenticationStateProvider
     {
-        private readonly ProtectedLocalStorage _storage;
+        private readonly TokenStorageService _storage;
         private readonly HttpClient _http;
-        private const string TokenKey = "authToken";
 
-        public JwtAuthStateProvider(ProtectedLocalStorage storage, HttpClient http)
+        public JwtAuthStateProvider(TokenStorageService storage, HttpClient http)
         {
             _storage = storage;
             _http = http;
@@ -19,8 +18,7 @@ namespace LunchApp.Client.Services
 
         public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
-            var result = await _storage.GetAsync<string>(TokenKey);
-            var token = result.Success ? result.Value : null;
+            var token = await _storage.GetTokenAsync();
             if (!string.IsNullOrWhiteSpace(token))
             {
                 _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
@@ -32,13 +30,13 @@ namespace LunchApp.Client.Services
 
         public async Task SetTokenAsync(string token)
         {
-            await _storage.SetAsync(TokenKey, token);
+            await _storage.SetTokenAsync(token);
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
 
         public async Task LogoutAsync()
         {
-            await _storage.DeleteAsync(TokenKey);
+            await _storage.RemoveTokenAsync();
             _http.DefaultRequestHeaders.Authorization = null;
             NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
