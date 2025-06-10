@@ -1,11 +1,11 @@
-﻿@page "/menu"
+@page "/menu"
 @inject ApiService Api
 
 <h3>Today's Menu</h3>
 
 @if (!string.IsNullOrEmpty(loadError))
 {
-    <p style="color:red">@loadError</p>
+    <p class="text-danger">@loadError</p>
 }
 else if (menu == null)
 {
@@ -13,13 +13,19 @@ else if (menu == null)
 }
 else
 {
-    foreach (var dish in menu)
-    {
-        <div class="dish-card">
-            <h4>@dish.Name (₾@dish.Price)</h4>
-            <p>@dish.Description</p>
-        </div>
-    }
+    <div class="row row-cols-1 row-cols-md-2 g-4">
+        @foreach (var dish in menu)
+        {
+            <div class="col">
+                <div class="card h-100">
+                    <div class="card-body">
+                        <h5 class="card-title">@dish.Name <span class="text-muted">(₾@dish.Price)</span></h5>
+                        <p class="card-text">@dish.Description</p>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
 }
 
 @code {
