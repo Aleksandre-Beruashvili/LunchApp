@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using OfficeCafeApp.API.Data;
 using OfficeCafeApp.API.Models;
 
-namespace LunchApp.Server.Controllers
+namespace OfficeCafeApp.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]

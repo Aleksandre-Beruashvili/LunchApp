@@ -2,7 +2,7 @@
 using OfficeCafeApp.API.Data;
 using LunchApp.Shared.DTOs;
 
-namespace LunchApp.Server.Controllers
+namespace OfficeCafeApp.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
