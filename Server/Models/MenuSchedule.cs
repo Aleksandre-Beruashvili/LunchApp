@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace LunchApp.Shared.Models
+namespace OfficeCafeApp.API.Models
 {
     public class MenuSchedule
     {

@@ -1,4 +1,4 @@
-﻿namespace LunchApp.Shared.DTOs
+﻿namespace OfficeCafeApp.API.DTOs
 {
     public class RatingDto
     {

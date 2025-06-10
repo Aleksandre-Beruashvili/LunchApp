@@ -5,8 +5,6 @@ VisualStudioVersion = 17.14.36202.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OfficeCafeApp.API", "Server\OfficeCafeApp.API.csproj", "{4B922B00-E3F3-462A-8357-9510EF0663E9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LunchApp.Frontend", "Client\LunchApp.Frontend.csproj", "{EBB726B0-2782-494D-A424-A782FC762723}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -17,10 +15,6 @@ Global
 		{4B922B00-E3F3-462A-8357-9510EF0663E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4B922B00-E3F3-462A-8357-9510EF0663E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4B922B00-E3F3-462A-8357-9510EF0663E9}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EBB726B0-2782-494D-A424-A782FC762723}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EBB726B0-2782-494D-A424-A782FC762723}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EBB726B0-2782-494D-A424-A782FC762723}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EBB726B0-2782-494D-A424-A782FC762723}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using LunchApp.Server.Data;
-using LunchApp.Shared.DTOs;
+using OfficeCafeApp.API.Data;
+using OfficeCafeApp.API.DTOs;
 
 namespace LunchApp.Server.Controllers
 {
