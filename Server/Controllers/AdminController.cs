@@ -8,12 +8,12 @@ namespace OfficeCafeApp.API.Controllers
 {
     [Authorize(Roles = "Manager")]
     [ApiController]
-    [Route("api/admin/[controller]")]
-    public class DashboardController : ControllerBase
+    [Route("api/admin")] 
+    public class AdminController : ControllerBase
     {
         private readonly IAdminService _adminService;
 
-        public DashboardController(IAdminService adminService)
+        public AdminController(IAdminService adminService)
         {
             _adminService = adminService;
         }
