@@ -18,3 +18,7 @@ From the repository root, start the backend API and the Blazor client in separat
 ```
 
 Browse to `http://localhost:5025/login` to access the application.
+
+## Simple static website
+
+A basic HTML version of the site is available in the `Website` folder. Open `index.html` in a browser to view it.
