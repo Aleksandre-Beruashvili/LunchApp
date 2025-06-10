@@ -10,15 +10,25 @@
     <InputText @bind-Value="regModel.ConfirmPassword" type="password" placeholder="Confirm Password" />
     <button type="submit">Register</button>
 </EditForm>
+@if (!string.IsNullOrEmpty(error))
+{
+    <p style="color:red">@error</p>
+}
 
 @code {
     RegisterModel regModel = new();
+    string error;
     async Task HandleRegister()
     {
-        if (regModel.Password != regModel.ConfirmPassword) return;
+        error = string.Empty;
+        if (regModel.Password != regModel.ConfirmPassword)
+        {
+            error = "Passwords do not match";
+            return;
+        }
         var success = await AuthService.Register(new RegisterDto { Email = regModel.Email, Password = regModel.Password });
         if (success) Nav.NavigateTo("/login");
-        else Console.WriteLine("Register failed");
+        else error = "Register failed";
     }
     public class RegisterModel { public string Email { get; set; } public string Password { get; set; } public string ConfirmPassword { get; set; } }
 }

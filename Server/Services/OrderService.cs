@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using LunchApp.Shared.DTOs;
 using Microsoft.EntityFrameworkCore;
 using OfficeCafeApp.API.Data;
-using OfficeCafeApp.API.DTOs;
+using LunchApp.Shared.DTOs;
 using OfficeCafeApp.API.Models;
 
 namespace OfficeCafeApp.API.Services

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
 using OfficeCafeApp.API.Data;
-using OfficeCafeApp.API.DTOs;
+using LunchApp.Shared.DTOs;
 using OfficeCafeApp.API.Models;
 using System.Text;
 using System.IdentityModel.Tokens.Jwt;

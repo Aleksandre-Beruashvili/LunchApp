@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Security.Claims;
 using System.Threading.Tasks;
-using OfficeCafeApp.API.DTOs;
+using LunchApp.Shared.DTOs;
 using OfficeCafeApp.API.Services;
 
 namespace OfficeCafeApp.API.Controllers

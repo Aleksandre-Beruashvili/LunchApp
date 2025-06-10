@@ -1,5 +1,5 @@
 ﻿using System.Threading.Tasks;
-using OfficeCafeApp.API.DTOs;
+using LunchApp.Shared.DTOs;
 using OfficeCafeApp.API.Models;
 
 namespace OfficeCafeApp.API.Services

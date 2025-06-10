@@ -34,7 +34,14 @@ else
     void SelectTime(string time) => selectedTime = time;
     async Task SubmitOrder()
     {
-        var dto = new OrderDto { UserId = 1, DishIds = new List<int> { 1 }, PickupTime = selectedTime, Date = DateTime.Today };
+        var dto = new OrderCreateDto
+        {
+            SlotId = 1,
+            Items = new List<OrderItemDto>
+            {
+                new() { DishId = 1, Quantity = 1 }
+            }
+        };
         await Api.PlaceOrder(dto);
     }
 }
