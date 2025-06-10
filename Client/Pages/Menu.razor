@@ -3,7 +3,11 @@
 
 <h3>Today's Menu</h3>
 
-@if (menu == null)
+@if (!string.IsNullOrEmpty(loadError))
+{
+    <p style="color:red">@loadError</p>
+}
+else if (menu == null)
 {
     <p>Loading...</p>
 }
@@ -20,8 +24,16 @@ else
 
 @code {
     List<Dish> menu;
+    string loadError;
     protected override async Task OnInitializedAsync()
     {
-        menu = await Api.GetTodayMenu();
+        try
+        {
+            menu = await Api.GetTodayMenu();
+        }
+        catch
+        {
+            loadError = "Failed to load menu.";
+        }
     }
 }
