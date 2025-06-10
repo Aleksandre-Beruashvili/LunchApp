@@ -14,10 +14,13 @@
         <InputText class="form-control" @bind-Value="regModel.ConfirmPassword" type="password" placeholder="Confirm Password" />
     </div>
     <button class="btn btn-primary w-100" type="submit">Register</button>
+    <div class="text-center mt-2">
+        <a href="/login">Already have an account? Login</a>
+    </div>
 </EditForm>
 @if (!string.IsNullOrEmpty(error))
 {
-    <p style="color:red">@error</p>
+    <div class="alert alert-danger mt-3" role="alert">@error</div>
 }
 
 @code {

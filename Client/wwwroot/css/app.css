@@ -31,3 +31,7 @@ h1:focus {
         content: "An error has occurred."
     }
 
+
+/* highlight selected order time slot */
+.list-group-item.active { background-color: #0d6efd; color: #fff; }
+

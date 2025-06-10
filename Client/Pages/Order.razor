@@ -15,7 +15,7 @@ else
             <ul class="list-group list-group-flush">
                 @foreach (var slot in timeSlots)
                 {
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <li class="list-group-item d-flex justify-content-between align-items-center @(slot.Time == selectedTime ? "active" : null)">
                         <span>@slot.Time (@slot.Count orders)</span>
                         <button class="btn btn-sm btn-outline-primary" @onclick="() => SelectTime(slot.Time)">Select</button>
                     </li>
@@ -28,6 +28,10 @@ else
                     <button class="btn btn-success" @onclick="SubmitOrder">Submit Order</button>
                 </div>
             }
+            @if (!string.IsNullOrEmpty(orderMessage))
+            {
+                <div class="alert alert-success mt-3" role="alert">@orderMessage</div>
+            }
         </div>
     </div>
 }
@@ -35,12 +39,17 @@ else
 @code {
     List<TimeSlot> timeSlots;
     string selectedTime;
+    string orderMessage;
 
     protected override async Task OnInitializedAsync()
     {
         timeSlots = await Api.GetTimeSlots(DateTime.Today);
     }
-    void SelectTime(string time) => selectedTime = time;
+    void SelectTime(string time)
+    {
+        selectedTime = time;
+        orderMessage = string.Empty;
+    }
     async Task SubmitOrder()
     {
         var dto = new OrderCreateDto
@@ -52,5 +61,6 @@ else
             }
         };
         await Api.PlaceOrder(dto);
+        orderMessage = "Order placed!";
     }
 }
