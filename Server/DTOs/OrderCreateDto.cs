@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
 namespace OfficeCafeApp.API.DTOs
 {
@@ -11,6 +11,8 @@ namespace OfficeCafeApp.API.DTOs
     public class OrderItemDto
     {
         public int DishId { get; set; }
+        public string DishName { get; set; }
+        public decimal Price { get; set; }
         public int Quantity { get; set; } = 1;
     }
 }
