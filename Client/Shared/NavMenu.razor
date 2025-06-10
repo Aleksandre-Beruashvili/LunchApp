@@ -1,4 +1,3 @@
-@inject AuthenticationStateProvider AuthState
 @inject AuthService Auth
 
 <nav>
@@ -6,15 +5,15 @@
         <li><NavLink href="/" Match="NavLinkMatch.All">Home</NavLink></li>
         <li><NavLink href="/menu">Menu</NavLink></li>
         <li><NavLink href="/order">Order</NavLink></li>
-        @if ((await AuthState.GetAuthenticationStateAsync()).User.Identity?.IsAuthenticated ?? false)
-        {
-            <li><button @onclick="Logout">Logout</button></li>
-        }
-        else
-        {
-            <li><NavLink href="/login">Login</NavLink></li>
-            <li><NavLink href="/register">Register</NavLink></li>
-        }
+        <AuthorizeView>
+            <Authorized>
+                <li><button @onclick="Logout">Logout</button></li>
+            </Authorized>
+            <NotAuthorized>
+                <li><NavLink href="/login">Login</NavLink></li>
+                <li><NavLink href="/register">Register</NavLink></li>
+            </NotAuthorized>
+        </AuthorizeView>
     </ul>
 </nav>
 
