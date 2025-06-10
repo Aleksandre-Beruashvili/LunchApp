@@ -11,10 +11,13 @@
         <InputText class="form-control" @bind-Value="loginModel.Password" type="password" placeholder="Password" />
     </div>
     <button class="btn btn-primary w-100" type="submit">Login</button>
+    <div class="text-center mt-2">
+        <a href="/register">Need an account? Register</a>
+    </div>
 </EditForm>
 @if (!string.IsNullOrEmpty(error))
 {
-    <p style="color:red">@error</p>
+    <div class="alert alert-danger mt-3" role="alert">@error</div>
 }
 
 @code {
