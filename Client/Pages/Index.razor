@@ -1,8 +1,19 @@
 @page "/"
+@using Microsoft.AspNetCore.Components.Authorization
 
-<div class="p-5 mb-4 bg-light rounded-3">
+<div class="p-5 mb-4 bg-light rounded-3 text-center hero">
     <div class="container-fluid py-5">
-        <h1 class="display-5 fw-bold">Welcome to LunchApp</h1>
-        <p class="fs-5">Manage your lunch orders with ease.</p>
+        <h1 class="display-5 fw-bold mb-3">Welcome to LunchApp</h1>
+        <p class="fs-5 mb-4">Manage your lunch orders with ease.</p>
+        <AuthorizeView>
+            <Authorized>
+                <a class="btn btn-success btn-lg mx-2" href="/menu">View Menu</a>
+                <a class="btn btn-primary btn-lg mx-2" href="/order">Place Order</a>
+            </Authorized>
+            <NotAuthorized>
+                <a class="btn btn-primary btn-lg mx-2" href="/login">Login</a>
+                <a class="btn btn-secondary btn-lg mx-2" href="/register">Register</a>
+            </NotAuthorized>
+        </AuthorizeView>
     </div>
 </div>
