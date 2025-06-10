@@ -1,9 +1,26 @@
-﻿<nav>
+@inject AuthenticationStateProvider AuthState
+@inject AuthService Auth
+
+<nav>
     <ul>
         <li><NavLink href="/" Match="NavLinkMatch.All">Home</NavLink></li>
         <li><NavLink href="/menu">Menu</NavLink></li>
         <li><NavLink href="/order">Order</NavLink></li>
-        <li><NavLink href="/login">Login</NavLink></li>
-        <li><NavLink href="/register">Register</NavLink></li>
+        @if ((await AuthState.GetAuthenticationStateAsync()).User.Identity?.IsAuthenticated ?? false)
+        {
+            <li><button @onclick="Logout">Logout</button></li>
+        }
+        else
+        {
+            <li><NavLink href="/login">Login</NavLink></li>
+            <li><NavLink href="/register">Register</NavLink></li>
+        }
     </ul>
 </nav>
+
+@code {
+    private async Task Logout()
+    {
+        await Auth.Logout();
+    }
+}

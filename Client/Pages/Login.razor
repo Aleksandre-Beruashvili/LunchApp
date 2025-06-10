@@ -9,13 +9,19 @@
     <InputText @bind-Value="loginModel.Password" type="password" placeholder="Password" />
     <button type="submit">Login</button>
 </EditForm>
+@if (!string.IsNullOrEmpty(error))
+{
+    <p style="color:red">@error</p>
+}
 
 @code {
     LoginDto loginModel = new();
+    string error;
     async Task HandleLogin()
     {
+        error = string.Empty;
         var success = await AuthService.Login(loginModel);
         if (success) Nav.NavigateTo("/menu");
-        else Console.WriteLine("Login failed");
+        else error = "Login failed";
     }
 }

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using LunchApp.Shared.DTOs;
-using OfficeCafeApp.API.DTOs;
 
 namespace OfficeCafeApp.API.Services
 {
@@ -12,10 +11,5 @@ namespace OfficeCafeApp.API.Services
         Task<bool> CancelOrderAsync(int userId, Guid orderId);
     }
 
-    public class OrderResult
-    {
-        public Guid OrderId { get; set; }
-        public string QRCode { get; set; }
-        public string PickupTime { get; set; }
-    }
+    // OrderResult is defined in LunchApp.Shared.DTOs
 }

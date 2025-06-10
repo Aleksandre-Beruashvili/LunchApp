@@ -1,4 +1,4 @@
-﻿namespace OfficeCafeApp.API.DTOs
+namespace LunchApp.Shared.DTOs
 {
     public class LoginDto
     {

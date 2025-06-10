@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace OfficeCafeApp.API.DTOs
+namespace LunchApp.Shared.DTOs
 {
     public class OrderCreateDto
     {

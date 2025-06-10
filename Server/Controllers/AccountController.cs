@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
-using OfficeCafeApp.API.DTOs;
+using LunchApp.Shared.DTOs;
 using OfficeCafeApp.API.Services;
 
 namespace OfficeCafeApp.API.Controllers

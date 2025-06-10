@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using OfficeCafeApp.API.DTOs;
 
 namespace LunchApp.Shared.DTOs
 {

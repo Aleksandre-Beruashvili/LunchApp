@@ -15,10 +15,10 @@ namespace LunchApp.Client.Services
         public async Task<List<TimeSlot>> GetTimeSlots(DateTime date)
             => await _http.GetFromJsonAsync<List<TimeSlot>>($"api/timeslot?date={date:yyyy-MM-dd}");
 
-        public async Task<int> PlaceOrder(OrderDto dto)
+        public async Task<OrderResult> PlaceOrder(OrderCreateDto dto)
         {
-            var res = await _http.PostAsJsonAsync("api/order", dto);
-            return await res.Content.ReadFromJsonAsync<int>();
+            var res = await _http.PostAsJsonAsync("api/orders", dto);
+            return await res.Content.ReadFromJsonAsync<OrderResult>();
         }
     }
 }
