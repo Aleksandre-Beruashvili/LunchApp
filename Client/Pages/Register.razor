@@ -2,12 +2,18 @@
 @inject AuthService AuthService
 @inject NavigationManager Nav
 
-<EditForm class="form-container" Model="regModel" OnValidSubmit="HandleRegister">
-    <h3>Register</h3>
-    <InputText class="form-field" @bind-Value="regModel.Email" placeholder="Email" />
-    <InputText class="form-field" @bind-Value="regModel.Password" type="password" placeholder="Password" />
-    <InputText class="form-field" @bind-Value="regModel.ConfirmPassword" type="password" placeholder="Confirm Password" />
-    <button class="submit-btn" type="submit">Register</button>
+<EditForm class="card p-4 mx-auto" style="max-width: 400px;" Model="regModel" OnValidSubmit="HandleRegister">
+    <h3 class="text-center mb-3">Register</h3>
+    <div class="mb-3">
+        <InputText class="form-control" @bind-Value="regModel.Email" placeholder="Email" />
+    </div>
+    <div class="mb-3">
+        <InputText class="form-control" @bind-Value="regModel.Password" type="password" placeholder="Password" />
+    </div>
+    <div class="mb-3">
+        <InputText class="form-control" @bind-Value="regModel.ConfirmPassword" type="password" placeholder="Confirm Password" />
+    </div>
+    <button class="btn btn-primary w-100" type="submit">Register</button>
 </EditForm>
 @if (!string.IsNullOrEmpty(error))
 {
