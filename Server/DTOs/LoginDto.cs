@@ -1,6 +1,6 @@
-﻿namespace LunchApp.Shared.DTOs
+﻿namespace OfficeCafeApp.API.DTOs
 {
-    public class RegisterDto
+    public class LoginDto
     {
         public string Email { get; set; }
         public string Password { get; set; }

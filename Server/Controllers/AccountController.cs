@@ -1,42 +1,37 @@
-﻿using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
-using LunchApp.Shared.DTOs;
+﻿using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
+using OfficeCafeApp.API.DTOs;
+using OfficeCafeApp.API.Services;
 
-namespace LunchApp.Server.Controllers
+namespace OfficeCafeApp.API.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
     public class AccountController : ControllerBase
     {
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly IAuthService _authService;
 
-        public AccountController(UserManager<IdentityUser> userManager,
-                                 SignInManager<IdentityUser> signInManager)
+        public AccountController(IAuthService authService)
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
+            _authService = authService;
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto dto)
+        public async Task<IActionResult> Register(RegisterDto registerDto)
         {
-            if (!dto.Email.EndsWith("@credo.ge"))
-                return BadRequest("Use your @credo.ge address.");
+            if (await _authService.UserExists(registerDto.Email))
+                return BadRequest("Email already exists");
 
-            var user = new IdentityUser { UserName = dto.Email, Email = dto.Email };
-            var result = await _userManager.CreateAsync(user, dto.Password);
-            if (!result.Succeeded) return BadRequest(result.Errors);
-            await _userManager.AddToRoleAsync(user, "User");
-            return Ok();
+            var user = await _authService.Register(registerDto);
+            return Ok(new { user.Id, user.Email, user.FullName });
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto dto)
+        public async Task<IActionResult> Login(LoginDto loginDto)
         {
-            var result = await _signInManager.PasswordSignInAsync(dto.Email, dto.Password, false, false);
-            if (!result.Succeeded) return Unauthorized();
-            return Ok();
+            var token = await _authService.Login(loginDto);
+            if (token == null) return Unauthorized("Invalid credentials");
+            return Ok(new { token });
         }
     }
 }

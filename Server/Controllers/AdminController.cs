@@ -1,58 +1,53 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using LunchApp.Server.Data;
-using LunchApp.Shared.DTOs;
+using OfficeCafeApp.API.Data;
+using OfficeCafeApp.API.DTOs;
+using OfficeCafeApp.API.Models;
+using OfficeCafeApp.API.Services;
 
-namespace LunchApp.Server.Controllers
+namespace OfficeCafeApp.API.Controllers
 {
+    [Authorize(Roles = "Manager")]
     [ApiController]
-    [Authorize(Roles = "Admin")]
-    [Route("api/[controller]")]
-    public class AdminController : ControllerBase
+    [Route("api/admin/[controller]")]
+    public class DashboardController : ControllerBase
     {
         private readonly AppDbContext _context;
-        public AdminController(AppDbContext context) { _context = context; }
+        private readonly IAdminService _adminService;
 
-        [HttpPost("dish")]
-        public async Task<IActionResult> AddDish([FromBody] DishDto dto)
+        public DashboardController(AppDbContext context, IAdminService adminService)
         {
-            var dish = new LunchApp.Shared.Models.Dish
-            {
-                Name = dto.Name,
-                Description = dto.Description,
-                Price = dto.Price,
-                ImageUrl = dto.ImageUrl,
-                Available = dto.Available
-            };
-            _context.Dishes.Add(dish);
-            await _context.SaveChangesAsync();
-            return Ok(dish);
-        }
-
-        [HttpPut("dish/{id}")]
-        public async Task<IActionResult> UpdateDish(int id, [FromBody] DishDto dto)
-        {
-            var dish = await _context.Dishes.FindAsync(id);
-            if (dish == null) return NotFound();
-            dish.Name = dto.Name;
-            dish.Description = dto.Description;
-            dish.Price = dto.Price;
-            dish.ImageUrl = dto.ImageUrl;
-            dish.Available = dto.Available;
-            await _context.SaveChangesAsync();
-            return Ok(dish);
+            _context = context;
+            _adminService = adminService;
         }
 
         [HttpGet("orders")]
-        public async Task<IActionResult> GetOrders([FromQuery] DateTime date)
+        public async Task<IActionResult> GetOrdersByDate([FromQuery] DateTime date)
         {
             var orders = await _context.Orders
-                .Where(o => o.Date == date)
-                .Include(o => o.Items)
-                    .ThenInclude(i => i.Dish)
+                .Where(o => o.OrderDate.Date == date.Date)
+                .Include(o => o.User)
+                .Include(o => o.Slot)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Dish)
                 .ToListAsync();
+
             return Ok(orders);
+        }
+
+        [HttpPatch("dishes/{id}/availability")]
+        public async Task<IActionResult> UpdateDishAvailability(int id, [FromBody] bool isAvailable)
+        {
+            var dish = await _context.Dishes.FindAsync(id);
+            if (dish == null) return NotFound();
+
+            dish.IsAvailable = isAvailable;
+            await _context.SaveChangesAsync();
+            return Ok();
         }
     }
 }

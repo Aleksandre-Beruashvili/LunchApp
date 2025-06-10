@@ -1,30 +1,29 @@
 ﻿using LunchApp.Shared.Models;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using OfficeCafeApp.API.Models;
 
-namespace LunchApp.Server.Data
+namespace OfficeCafeApp.API.Data
 {
-    public class AppDbContext : IdentityDbContext<IdentityUser>
+    public class AppDbContext : DbContext
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-        protected override void OnModelCreating(ModelBuilder modelBuilder)
-        {
-            modelBuilder.HasDefaultSchema("lunchapp");
-            base.OnModelCreating(modelBuilder);
-
-            modelBuilder.Entity<IdentityRole>().HasData(
-              new IdentityRole { Name = "Admin", NormalizedName = "ADMIN" },
-              new IdentityRole { Name = "User", NormalizedName = "USER" }
-            );
-
-        }
-
+        public DbSet<User> Users { get; set; }
         public DbSet<Dish> Dishes { get; set; }
-        public DbSet<MenuSchedule> MenuSchedules { get; set; }
+        public DbSet<Slot> Slots { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
         public DbSet<Rating> Ratings { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            modelBuilder.Entity<OrderItem>()
+                .HasKey(oi => new { oi.OrderId, oi.DishId });
+
+            modelBuilder.Entity<Order>()
+                .HasMany(o => o.OrderItems)
+                .WithOne(oi => oi.Order)
+                .HasForeignKey(oi => oi.OrderId);
+        }
     }
 }
