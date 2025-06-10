@@ -35,3 +35,9 @@ h1:focus {
 /* highlight selected order time slot */
 .list-group-item.active { background-color: #0d6efd; color: #fff; }
 
+
+/* hero section styling */
+.hero {
+    background: linear-gradient(135deg, #f9c74f, #f9844a);
+    color: #fff;
+}
