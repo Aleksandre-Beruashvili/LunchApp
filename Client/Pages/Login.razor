@@ -2,12 +2,11 @@
 @inject AuthService AuthService
 @inject NavigationManager Nav
 
-<h3>Login</h3>
-
-<EditForm Model="loginModel" OnValidSubmit="HandleLogin">
-    <InputText @bind-Value="loginModel.Email" placeholder="Email" />
-    <InputText @bind-Value="loginModel.Password" type="password" placeholder="Password" />
-    <button type="submit">Login</button>
+<EditForm class="form-container" Model="loginModel" OnValidSubmit="HandleLogin">
+    <h3>Login</h3>
+    <InputText class="form-field" @bind-Value="loginModel.Email" placeholder="Email" />
+    <InputText class="form-field" @bind-Value="loginModel.Password" type="password" placeholder="Password" />
+    <button class="submit-btn" type="submit">Login</button>
 </EditForm>
 @if (!string.IsNullOrEmpty(error))
 {
