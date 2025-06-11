@@ -1,6 +1,14 @@
+using Microsoft.Extensions.FileProviders;
+
 var builder = WebApplication.CreateBuilder(args);
 var app = builder.Build();
 
-app.MapGet("/", () => "Hello World!");
+var fileProvider = new PhysicalFileProvider(builder.Environment.ContentRootPath);
+
+app.UseFileServer(new FileServerOptions
+{
+    FileProvider = fileProvider,
+    EnableDefaultFiles = true
+});
 
 app.Run();
