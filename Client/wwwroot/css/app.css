@@ -40,6 +40,16 @@ h1:focus {
 .hero {
     background: linear-gradient(135deg, #f9c74f, #f9844a);
     color: #fff;
+    min-height: 60vh;
+    display: flex;
+    align-items: center;
+}
+
+/* feature cards */
+.feature-card {
+    background-color: #fff;
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
 }
 
 /* ensure nav lists never show raw bullet styling */
