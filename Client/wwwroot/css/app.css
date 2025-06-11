@@ -41,3 +41,10 @@ h1:focus {
     background: linear-gradient(135deg, #f9c74f, #f9844a);
     color: #fff;
 }
+
+/* ensure nav lists never show raw bullet styling */
+.navbar-nav {
+    list-style: none;
+    margin: 0;
+    padding-left: 0;
+}
