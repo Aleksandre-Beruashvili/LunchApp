@@ -6,4 +6,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Content Include="*.html" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="*.css" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="*.js" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
 </Project>
