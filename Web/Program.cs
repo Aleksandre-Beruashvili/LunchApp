@@ -1,14 +1,11 @@
-using Microsoft.Extensions.FileProviders;
-
 var builder = WebApplication.CreateBuilder(args);
+
+// Serve static files from the project root so HTML, CSS and JS work
+builder.WebHost.UseWebRoot(builder.Environment.ContentRootPath);
+
 var app = builder.Build();
 
-var fileProvider = new PhysicalFileProvider(builder.Environment.ContentRootPath);
-
-app.UseFileServer(new FileServerOptions
-{
-    FileProvider = fileProvider,
-    EnableDefaultFiles = true
-});
+app.UseDefaultFiles();
+app.UseStaticFiles();
 
 app.Run();
