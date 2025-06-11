@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Order - LunchApp</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="style.css" rel="stylesheet">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="index.html">LunchApp</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbarNav">
+      <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+        <li class="nav-item"><a class="nav-link" href="index.html">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="menu.html">Menu</a></li>
+        <li class="nav-item"><a class="nav-link active" href="order.html">Order</a></li>
+      </ul>
+      <ul class="navbar-nav">
+        <li class="nav-item"><a class="nav-link" href="login.html">Login</a></li>
+        <li class="nav-item"><a class="nav-link" href="register.html">Register</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<div class="container mt-4">
+  <h1>Order</h1>
+  <div id="slots" class="list-group mb-3"></div>
+  <button id="place" class="btn btn-primary" disabled>Place order</button>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script type="module">
+import { getSlots, placeOrder } from './app.js';
+const slotsDiv = document.getElementById('slots');
+const placeBtn = document.getElementById('place');
+let selected = null;
+
+async function load() {
+  const date = new Date().toISOString().split('T')[0];
+  const slots = await getSlots(date);
+  if (!slots) return;
+  for (const s of slots) {
+    const btn = document.createElement('button');
+    btn.className = 'list-group-item list-group-item-action';
+    btn.textContent = `${s.time} (${s.count})`;
+    btn.onclick = () => {
+      selected = s;
+      Array.from(slotsDiv.children).forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      placeBtn.disabled = false;
+    };
+    slotsDiv.appendChild(btn);
+  }
+}
+
+placeBtn.addEventListener('click', async () => {
+  const token = localStorage.getItem('token');
+  if (!token || !selected) return alert('Select slot and login.');
+  const dto = { slotId: 1, items: [{ dishId: 1, quantity: 1 }] };
+  const res = await placeOrder(token, dto);
+  if (res) alert('Order placed');
+  else alert('Failed');
+});
+
+load();
+</script>
+</body>
+</html>
