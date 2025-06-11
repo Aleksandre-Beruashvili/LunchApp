@@ -1,0 +1,9 @@
+/* Form specific styling */
+.card form {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+.input-validation-error {
+    border-color: #dc3545;
+}
