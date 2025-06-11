@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LunchApp.Frontend", "Client
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LunchApp.Shared", "Shared\LunchApp.Shared.csproj", "{8BFF7E24-75A0-49D3-9213-26AB58DB26A0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Web", "Web\Web.csproj", "{A0E477E0-3B12-401E-BAB7-70063551DA75}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{8BFF7E24-75A0-49D3-9213-26AB58DB26A0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8BFF7E24-75A0-49D3-9213-26AB58DB26A0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8BFF7E24-75A0-49D3-9213-26AB58DB26A0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0E477E0-3B12-401E-BAB7-70063551DA75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0E477E0-3B12-401E-BAB7-70063551DA75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0E477E0-3B12-401E-BAB7-70063551DA75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0E477E0-3B12-401E-BAB7-70063551DA75}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
