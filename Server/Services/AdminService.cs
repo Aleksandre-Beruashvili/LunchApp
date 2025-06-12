@@ -17,6 +17,17 @@ namespace OfficeCafeApp.API.Services
             _context = context;
         }
 
+        public async Task<IEnumerable<Order>> GetOrdersByDateAsync(DateTime date)
+        {
+            return await _context.Orders
+                .Where(o => o.OrderDate.Date == date.Date)
+                .Include(o => o.User)
+                .Include(o => o.Slot)
+                .Include(o => o.OrderItems)
+                    .ThenInclude(oi => oi.Dish)
+                .ToListAsync();
+        }
+
         public async Task<IEnumerable<(TimeSpan Slot, int Count)>> GetOrderCountsByDateAsync(DateTime date)
         {
             return await _context.Orders
