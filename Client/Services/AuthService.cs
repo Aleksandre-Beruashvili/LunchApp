@@ -17,35 +17,58 @@ namespace LunchApp.Client.Services
             _authProvider = authProvider;
         }
 
-        // Register user
-        public async Task<bool> Register(RegisterDto dto)
+        // ─── REGISTER ──────────────────────────────────────────────────────────────
+        public async Task<(bool Success, string Message)> Register(RegisterDto dto)
         {
-            var res = await _http.PostAsJsonAsync("api/account/register", dto);
-            return res.IsSuccessStatusCode;
+            try
+            {
+                var response = await _http.PostAsJsonAsync("api/account/register", dto);
+                if (response.IsSuccessStatusCode)
+                    return (true, "");
+
+                // Read error text from API (e.g. "Email already exists")
+                var errorText = await response.Content.ReadAsStringAsync();
+                return (false, string.IsNullOrWhiteSpace(errorText)
+                    ? "Registration failed."
+                    : errorText);
+            }
+            catch
+            {
+                return (false, "Could not connect to server.");
+            }
         }
 
-        // Login user
-        public async Task<bool> Login(LoginDto dto)
+        // ─── LOGIN ─────────────────────────────────────────────────────────────────
+        public async Task<(bool Success, string Message)> Login(LoginDto dto)
         {
-            var res = await _http.PostAsJsonAsync("api/account/login", dto);
-
-            if (!res.IsSuccessStatusCode)
-                return false;
-
-            var result = await res.Content.ReadFromJsonAsync<LoginResponse>();
-
-            if (result != null && !string.IsNullOrWhiteSpace(result.Token))
+            try
             {
-                await _authProvider.SetTokenAsync(result.Token);
+                var res = await _http.PostAsJsonAsync("api/account/login", dto);
 
-                // Optional: Set token in Authorization header
-                _http.DefaultRequestHeaders.Authorization =
-                    new AuthenticationHeaderValue("Bearer", result.Token);
+                if (!res.IsSuccessStatusCode)
+                {
+                    var err = await res.Content.ReadAsStringAsync();
+                    return (false, string.IsNullOrWhiteSpace(err)
+                        ? "Invalid credentials."
+                        : err);
+                }
 
-                return true;
+                var result = await res.Content.ReadFromJsonAsync<LoginResponse>();
+                if (result != null && !string.IsNullOrWhiteSpace(result.Token))
+                {
+                    // Save and apply token
+                    await _authProvider.SetTokenAsync(result.Token);
+                    _http.DefaultRequestHeaders.Authorization =
+                        new AuthenticationHeaderValue("Bearer", result.Token);
+                    return (true, "");
+                }
+
+                return (false, "Login succeeded but no token returned.");
             }
-
-            return false;
+            catch
+            {
+                return (false, "Could not connect to server.");
+            }
         }
 
         public Task Logout() => _authProvider.LogoutAsync();

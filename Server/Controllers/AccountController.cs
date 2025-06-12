@@ -6,7 +6,7 @@ using OfficeCafeApp.API.Services;
 namespace OfficeCafeApp.API.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/account")]
     public class AccountController : ControllerBase
     {
         private readonly IAuthService _authService;
@@ -17,7 +17,7 @@ namespace OfficeCafeApp.API.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register(RegisterDto registerDto)
+        public async Task<IActionResult> Register([FromBody] RegisterDto registerDto)
         {
             if (await _authService.UserExists(registerDto.Email))
                 return BadRequest("Email already exists");
@@ -27,10 +27,12 @@ namespace OfficeCafeApp.API.Controllers
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login(LoginDto loginDto)
+        public async Task<IActionResult> Login([FromBody] LoginDto loginDto)
         {
             var token = await _authService.Login(loginDto);
-            if (token == null) return Unauthorized("Invalid credentials");
+            if (token == null)
+                return Unauthorized("Invalid credentials");
+
             return Ok(new { token });
         }
     }

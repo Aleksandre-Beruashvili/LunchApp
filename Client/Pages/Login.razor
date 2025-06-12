@@ -3,48 +3,46 @@
 @inject AuthService AuthService
 @inject NavigationManager Nav
 
-<EditForm class="card p-4 mx-auto" style="max-width: 400px;" Model="loginModel" OnValidSubmit="HandleLogin">
+<EditForm Model="loginModel" OnValidSubmit="HandleLogin" class="card p-4 mx-auto" style="max-width:400px;">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
     <h3 class="text-center mb-3">Login</h3>
 
-    <!-- Email -->
     <div class="mb-3">
         <InputText class="form-control" @bind-Value="loginModel.Email" placeholder="Email" />
     </div>
-
-    <!-- Password -->
     <div class="mb-3">
         <InputText class="form-control" @bind-Value="loginModel.Password" type="password" placeholder="Password" />
     </div>
-
-    <!-- Submit Button -->
     <button class="btn btn-primary w-100" type="submit">Login</button>
-
     <div class="text-center mt-2">
         <a href="/register">Need an account? Register</a>
     </div>
 </EditForm>
 
-<!-- Error Message -->
 @if (!string.IsNullOrEmpty(error))
 {
-    <div class="alert alert-danger mt-3" role="alert">@error</div>
+    <div class="alert alert-danger mt-3">@error</div>
 }
 
 @code {
-    LoginDto loginModel = new(); // ✅ using shared DTO
+    LoginDto loginModel = new();
     string error;
 
     async Task HandleLogin()
     {
         error = string.Empty;
+        var (success, message) = await AuthService.Login(loginModel);
 
-        var success = await AuthService.Login(loginModel);
         if (success)
+        {
             Nav.NavigateTo("/menu");
+        }
         else
-            error = "Login failed";
+        {
+            // Show the actual message from the API or client
+            error = message;
+        }
     }
 }

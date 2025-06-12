@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using LunchApp.Core.Enums;
 using LunchApp.Shared.DTOs;
 using Microsoft.EntityFrameworkCore;
 using OfficeCafeApp.API.Data;
@@ -18,57 +19,66 @@ namespace OfficeCafeApp.API.Services
             _context = context;
         }
 
-        public async Task<OrderResult> CreateOrderAsync(int userId, OrderCreateDto orderDto)
+        public async Task<OrderResult> CreateOrderAsync(int userId, OrderCreateDto dto)
         {
-            var slot = await _context.Slots.FindAsync(orderDto.SlotId);
-            if (slot == null) throw new Exception("Invalid slot");
-
-            var order = new Order
+            using var tx = await _context.Database.BeginTransactionAsync();
+            try
             {
-                UserId = userId,
-                SlotId = orderDto.SlotId,
-                Status = "Preparing",
-                QRCode = Guid.NewGuid().ToString()
-            };
+                var slot = await _context.Slots.FindAsync(dto.SlotId)
+                    ?? throw new KeyNotFoundException("Invalid slot");
 
-            _context.Orders.Add(order);
+                var order = new Order
+                {
+                    UserId = userId,
+                    SlotId = dto.SlotId,
+                    QRCode = Guid.NewGuid().ToString(),
+                    Status = OrderStatus.Preparing
+                };
+                _context.Orders.Add(order);
 
-            foreach (var item in orderDto.Items)
-            {
-                var dish = await _context.Dishes.FindAsync(item.DishId);
-                if (dish == null) throw new Exception($"Dish {item.DishId} not found");
+                foreach (var item in dto.Items)
+                {
+                    var dish = await _context.Dishes.FindAsync(item.DishId)
+                               ?? throw new KeyNotFoundException($"Dish {item.DishId} not found");
+                    if (!dish.IsAvailable)
+                        throw new InvalidOperationException($"Dish {dish.Name} is sold out");
 
-                _context.OrderItems.Add(new OrderItem
+                    _context.OrderItems.Add(new OrderItem
+                    {
+                        OrderId = order.Id,
+                        DishId = dish.Id,
+                        Quantity = item.Quantity
+                    });
+                }
+
+                slot.CurrentCount++;
+                await _context.SaveChangesAsync();
+                await tx.CommitAsync();
+
+                return new OrderResult
                 {
                     OrderId = order.Id,
-                    DishId = item.DishId,
-                    Quantity = item.Quantity
-                });
+                    QRCode = order.QRCode,
+                    PickupTime = $"{slot.StartTime:hh\\:mm}-{slot.EndTime:hh\\:mm}"
+                };
             }
-
-            await _context.SaveChangesAsync();
-
-            return new OrderResult
+            catch
             {
-                OrderId = order.Id,
-                QRCode = order.QRCode,
-                PickupTime = $"{slot.StartTime:hh\\:mm} - {slot.EndTime:hh\\:mm}"
-            };
+                await tx.RollbackAsync();
+                throw;
+            }
         }
 
         public async Task<IEnumerable<OrderDto>> GetUserOrdersAsync(int userId)
         {
             return await _context.Orders
                 .Where(o => o.UserId == userId)
-                .Include(o => o.Slot)
-                .Include(o => o.OrderItems)
-                    .ThenInclude(oi => oi.Dish)
                 .OrderByDescending(o => o.OrderDate)
                 .Select(o => new OrderDto
                 {
                     Id = o.Id,
                     OrderDate = o.OrderDate,
-                    Status = o.Status,
+                    Status = o.Status.ToString(),
                     QRCode = o.QRCode,
                     Slot = $"{o.Slot.StartTime:hh\\:mm}-{o.Slot.EndTime:hh\\:mm}",
                     Items = o.OrderItems.Select(oi => new OrderItemDto
@@ -82,23 +92,22 @@ namespace OfficeCafeApp.API.Services
                 .ToListAsync();
         }
 
-        public async Task<bool> CancelOrderAsync(int userId, Guid orderId)
+        public async Task<ServiceResult> CancelOrderAsync(int userId, Guid orderId)
         {
-            var order = await _context.Orders
-                .FirstOrDefaultAsync(o => o.Id == orderId && o.UserId == userId);
+            var order = await _context.Orders.FindAsync(orderId);
+            if (order == null || order.UserId != userId)
+                return new ServiceResult { Success = false, Error = "Order not found." };
 
-            if (order == null) return false;
-
-            // Check if cancellation is allowed (30 mins before slot)
             var slot = await _context.Slots.FindAsync(order.SlotId);
             var now = DateTime.UtcNow;
             var slotStart = now.Date + slot.StartTime;
+            if ((slotStart - now).TotalMinutes < 30)
+                return new ServiceResult { Success = false, Error = "Too late to cancel." };
 
-            if ((slotStart - now).TotalMinutes < 30) return false;
-
-            order.Status = "Cancelled";
+            order.Status = OrderStatus.Cancelled;
+            slot.CurrentCount--;
             await _context.SaveChangesAsync();
-            return true;
+            return new ServiceResult { Success = true };
         }
     }
 }

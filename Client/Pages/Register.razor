@@ -16,7 +16,7 @@
 
     <!-- Email -->
     <div class="mb-3">
-        <InputText class="form-control" @bind-Value="regModel.Email" placeholder="Email" />
+        <InputText class="form-control" @bind-Value="regModel.Email" placeholder="Email (must be &#64;credo.ge)" />
     </div>
 
     <!-- Password -->
@@ -42,7 +42,7 @@
 }
 
 @code {
-    RegisterDto regModel = new(); // DTO model
+    RegisterDto regModel = new();
     string confirmPassword = string.Empty;
     string error;
 
@@ -52,18 +52,21 @@
 
         if (regModel.Password != confirmPassword)
         {
-            error = "Passwords do not match";
+            error = "Passwords do not match.";
             return;
         }
 
-        var success = await AuthService.Register(regModel);
+        var (success, message) = await AuthService.Register(regModel);
+
         if (success)
         {
             Nav.NavigateTo("/login");
         }
         else
         {
-            error = "Registration failed. Email may already be used.";
+            error = string.IsNullOrWhiteSpace(message)
+                ? "Registration failed. Try again."
+                : message;
         }
     }
 }
