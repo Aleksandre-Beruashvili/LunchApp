@@ -13,7 +13,7 @@ builder.Services.AddScoped(sp =>
     new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) }
 );
 
-// Auth services
+// Authentication
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<TokenStorageService>();
 builder.Services.AddScoped<JwtAuthStateProvider>();

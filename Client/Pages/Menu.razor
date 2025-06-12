@@ -1,12 +1,19 @@
 @page "/menu"
 @layout MainLayout
 
+@using Microsoft.AspNetCore.Components.Authorization
 @using LunchApp.Shared.DTOs
 @inject ApiService Api
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager Nav
 
 <h2 class="mb-4 text-center fw-bold">Today's Dishes</h2>
 
-@if (dishes == null)
+@if (!isAuthorized)
+{
+    <div class="text-center text-danger">Redirecting to login...</div>
+}
+else if (dishes == null)
 {
     <div class="text-center"><div class="spinner-border"></div></div>
 }
@@ -29,30 +36,11 @@ else
                     {
                         <span class="badge sold-out-badge">Sold Out</span>
                         <button class="btn btn-secondary order-btn" disabled>Order</button>
-                        <div class="quantity-group">
-                            <div class="input-group">
-                                <button class="btn btn-outline-secondary" disabled>−</button>
-                                <input type="text" class="form-control text-center" value="0" disabled />
-                                <button class="btn btn-outline-secondary" disabled>＋</button>
-                            </div>
-                            <div class="left-text">Left: 0</div>
-                        </div>
                     }
                     else
                     {
                         <span class="badge available-badge">Available</span>
-                        <button class="btn btn-success order-btn"
-                                @onclick="() => AddToCart(d)">
-                            Order
-                        </button>
-                        <div class="quantity-group">
-                            <div class="input-group">
-                                <button class="btn btn-outline-secondary" @onclick="() => ChangeQty(d, -1)">−</button>
-                                <input type="text" class="form-control text-center" value="@GetQty(d)" readonly />
-                                <button class="btn btn-outline-secondary" @onclick="() => ChangeQty(d, +1)">＋</button>
-                            </div>
-                            <div class="left-text">Left: @d.Leftover</div>
-                        </div>
+                        <button class="btn btn-success order-btn">Order</button>
                     }
                 </div>
             </li>
@@ -61,25 +49,20 @@ else
 }
 
 @code {
-    List<DishDto> dishes;
-    Dictionary<DishDto, int> cart = new();
+    private List<DishDto> dishes;
+    private bool isAuthorized;
 
     protected override async Task OnInitializedAsync()
     {
+        var auth = await AuthStateProvider.GetAuthenticationStateAsync();
+        if (auth.User.Identity?.IsAuthenticated != true)
+        {
+            isAuthorized = false;
+            Nav.NavigateTo("/login", forceLoad: true);
+            return;
+        }
+
+        isAuthorized = true;
         dishes = await Api.GetTodayMenu();
     }
-
-    void AddToCart(DishDto d)
-    {
-        if (!cart.ContainsKey(d)) cart[d] = 1;
-    }
-
-    void ChangeQty(DishDto d, int delta)
-    {
-        if (!cart.ContainsKey(d)) return;
-        cart[d] = Math.Max(0, cart[d] + delta);
-    }
-
-    int GetQty(DishDto d) =>
-      cart.TryGetValue(d, out var q) ? q : 0;
 }
