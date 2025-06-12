@@ -1,45 +1,185 @@
-@page "/menu"
-@inject ApiService Api
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>LunchApp - Today's Dishes</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: #f8f9fa;
+        }
 
-<h3>Today's Menu</h3>
+        .dish-list {
+            list-style: none;
+            padding: 0;
+        }
 
-@if (!string.IsNullOrEmpty(loadError))
-{
-    <p class="text-danger">@loadError</p>
-}
-else if (menu == null)
-{
-    <p>Loading...</p>
-}
-else
-{
-    <div class="row row-cols-1 row-cols-md-2 g-4">
-        @foreach (var dish in menu)
-        {
-            <div class="col">
-                <div class="card h-100">
-                    <div class="card-body">
-                        <h5 class="card-title">@dish.Name <span class="text-muted">(₾@dish.Price)</span></h5>
-                        <p class="card-text">@dish.Description</p>
+        .dish-item {
+            display: flex;
+            align-items: center;
+            background: #fff;
+            padding: 1rem;
+            border-radius: .5rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+            transition: transform .2s;
+        }
+
+            .dish-item:hover {
+                transform: translateY(-5px);
+            }
+
+        .dish-image {
+            width: 25%;
+            flex-shrink: 0;
+        }
+
+            .dish-image img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                border-radius: .5rem;
+            }
+
+        .dish-info {
+            width: 50%;
+            padding: 0 1rem;
+        }
+
+            .dish-info h5 {
+                font-weight: 600;
+                margin-bottom: .5rem;
+            }
+
+            .dish-info p {
+                margin-bottom: .25rem;
+            }
+
+        .dish-actions {
+            width: 25%;
+            text-align: center;
+        }
+
+        .badge {
+            padding: .5em 1em;
+            font-size: .85rem;
+            margin-bottom: .75rem;
+        }
+
+        .sold-out-badge {
+            background: #dc3545;
+            color: #fff;
+        }
+
+        .available-badge {
+            background: #28a745;
+            color: #fff;
+        }
+
+        .order-btn {
+            width: 80%;
+            margin-bottom: .5rem;
+        }
+
+        .quantity-group {
+            margin: .5rem auto 0;
+            width: 70%;
+        }
+
+            .quantity-group .input-group {
+                box-shadow: none;
+            }
+
+            .quantity-group .form-control {
+                border-radius: 0;
+            }
+
+            .quantity-group .btn {
+                border-radius: 0;
+                width: 2rem;
+            }
+
+        .left-text {
+            font-size: .85rem;
+            color: #6c757d;
+            margin-top: .25rem;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-white bg-white shadow-sm">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="#">LunchApp</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarMenu">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item me-3"><a class="nav-link" href="#">Home</a></li>
+                    <li class="nav-item me-3"><a class="nav-link active fw-semibold" href="#">Menu</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#">Contact</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container my-5">
+        <h2 class="mb-4 text-center fw-bold">Today's Dishes</h2>
+        <ul class="dish-list">
+
+            <!-- Sold Out Item -->
+            <li class="dish-item">
+                <div class="dish-image">
+                    <img src="https://via.placeholder.com/200" alt="Grilled Chicken Salad">
+                </div>
+                <div class="dish-info">
+                    <h5>Grilled Chicken Salad</h5>
+                    <p class="text-muted">Portion: 250g</p>
+                    <p class="fw-bold fs-5">$12.99</p>
+                </div>
+                <div class="dish-actions">
+                    <span class="badge sold-out-badge">Sold Out</span>
+                    <button class="btn btn-secondary order-btn" disabled>Order</button>
+                    <div class="quantity-group">
+                        <div class="input-group">
+                            <button class="btn btn-outline-secondary" disabled>&minus;</button>
+                            <input type="text" class="form-control text-center" value="0" disabled>
+                            <button class="btn btn-outline-secondary" disabled>&#43;</button>
+                        </div>
+                        <div class="left-text">Left: 0</div>
                     </div>
                 </div>
-            </div>
-        }
-    </div>
-}
+            </li>
 
-@code {
-    List<DishDto> menu;
-    string loadError;
-    protected override async Task OnInitializedAsync()
-    {
-        try
-        {
-            menu = await Api.GetTodayMenu();
-        }
-        catch
-        {
-            loadError = "Failed to load menu.";
-        }
-    }
-}
+            <!-- Available Item -->
+            <li class="dish-item">
+                <div class="dish-image">
+                    <img src="https://via.placeholder.com/200" alt="Tomato Basil Soup">
+                </div>
+                <div class="dish-info">
+                    <h5>Tomato Basil Soup</h5>
+                    <p class="text-muted">Portion: 300ml</p>
+                    <p class="fw-bold fs-5">$7.50</p>
+                </div>
+                <div class="dish-actions">
+                    <span class="badge available-badge">Available</span>
+                    <button class="btn btn-success order-btn">Order</button>
+                    <div class="quantity-group">
+                        <div class="input-group">
+                            <button class="btn btn-outline-secondary">&minus;</button>
+                            <input type="text" class="form-control text-center" value="1">
+                            <button class="btn btn-outline-secondary">&#43;</button>
+                        </div>
+                        <div class="left-text">Left: 8</div>
+                    </div>
+                </div>
+            </li>
+
+        </ul>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
