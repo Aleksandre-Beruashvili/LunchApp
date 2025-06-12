@@ -30,11 +30,12 @@ namespace OfficeCafeApp.API.Services
 
         public async Task<IEnumerable<(TimeSpan Slot, int Count)>> GetOrderCountsByDateAsync(DateTime date)
         {
-            return await _context.Orders
+            return (await _context.Orders
                 .Where(o => o.OrderDate.Date == date.Date)
                 .GroupBy(o => o.Slot.StartTime)
-                .Select(g => (Slot: g.Key, Count: g.Count()))
-                .ToListAsync();
+                .Select(g => new { Slot = g.Key, Count = g.Count() })
+                .ToListAsync())
+                .Select(g => (g.Slot, g.Count));
         }
 
         public async Task<bool> UpdateDishAvailabilityAsync(int dishId, bool isAvailable)

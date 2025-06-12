@@ -12,5 +12,7 @@ namespace OfficeCafeApp.API.Models
 
         [Required]
         public TimeSpan EndTime { get; set; }
+
+        public int CurrentCount { get; set; }
     }
 }
