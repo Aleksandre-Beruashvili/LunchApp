@@ -7,15 +7,19 @@ using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// 1) CORS: allow the hosted Blazor client on the same origin
+// 1) CORS: allow both server and standalone client in dev
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowBlazorClient", policy =>
     {
         policy
-            .WithOrigins("https://localhost:5001") // ✅ match server URL
+            .WithOrigins(
+                "https://localhost:5005", // when client is hosted inside API
+                "https://localhost:5003"  // standalone Blazor dev server
+            )
             .AllowAnyMethod()
-            .AllowAnyHeader();
+            .AllowAnyHeader()
+            .AllowCredentials();
     });
 });
 
@@ -27,22 +31,23 @@ builder.Services.AddScoped<IOrderService, OrderService>();
 builder.Services.AddScoped<IAdminService, AdminService>();
 
 // 3) JWT auth
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-  .AddJwtBearer(opts =>
-  {
-      opts.TokenValidationParameters = new TokenValidationParameters
-      {
-          ValidateIssuerSigningKey = true,
-          IssuerSigningKey = new SymmetricSecurityKey(
-          Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
-          ValidateIssuer = true,
-          ValidIssuer = builder.Configuration["Jwt:Issuer"],
-          ValidateAudience = true,
-          ValidAudience = builder.Configuration["Jwt:Audience"],
-          ValidateLifetime = true,
-          ClockSkew = TimeSpan.Zero
-      };
-  });
+builder.Services
+    .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(opts =>
+    {
+        opts.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
+            ValidateIssuer = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidateAudience = true,
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            ValidateLifetime = true,
+            ClockSkew = TimeSpan.Zero
+        };
+    });
 builder.Services.AddAuthorization();
 
 // 4) MVC + Swagger + Blazor static
@@ -53,7 +58,7 @@ builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// 5) Migrate and seed
+// 5) Migrate & seed
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -69,20 +74,22 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-app.UseBlazorFrameworkFiles();   // serve Blazor static files
+
+// 7) Serve the Blazor client when published into API/wwwroot
+app.UseBlazorFrameworkFiles();
 app.UseStaticFiles();
 
 app.UseRouting();
 
-// 7) CORS **before** auth
+// 8) CORS before auth
 app.UseCors("AllowBlazorClient");
 
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 8) Endpoints
+// 9) Map endpoints
 app.MapControllers();
 app.MapRazorPages();
-app.MapFallbackToFile("index.html"); // serve Blazor UI
+app.MapFallbackToFile("index.html");
 
 app.Run();

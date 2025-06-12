@@ -1,22 +1,27 @@
 @namespace LunchApp.Client.Shared
-@inject LunchApp.Client.Services.AuthService AuthService
+@inject AuthService AuthService
+@inject HttpClient Http
 @inject NavigationManager Nav
 
-<ul class="navbar-nav me-auto mb-2 mb-lg-0">
+<ul class="navbar-nav ms-auto mb-2 mb-lg-0">
     <AuthorizeView>
         <Authorized>
-            <li class="nav-item">
-                <NavLink class="nav-link" href="/home">Home</NavLink>
+            <li class="nav-item me-3">
+                <NavLink class="nav-link" href="/menu">Menu</NavLink>
+            </li>
+            <li class="nav-item me-3">
+                <NavLink class="nav-link" href="/order">Order</NavLink>
             </li>
             <li class="nav-item">
-                <button class="btn btn-outline-danger btn-sm"
+                <button type="button"
+                        class="btn btn-outline-danger nav-link"
                         @onclick="OnLogoutClicked">
                     Logout
                 </button>
             </li>
         </Authorized>
         <NotAuthorized>
-            <li class="nav-item">
+            <li class="nav-item me-3">
                 <NavLink class="nav-link" href="/login">Login</NavLink>
             </li>
             <li class="nav-item">
@@ -30,6 +35,7 @@
     private async Task OnLogoutClicked()
     {
         await AuthService.Logout();
-        Nav.NavigateTo("/login");
+        Http.DefaultRequestHeaders.Authorization = null;
+        Nav.NavigateTo("/login", forceLoad: true);
     }
 }

@@ -1,7 +1,8 @@
-@page "/home"
-@attribute [Authorize]
+﻿@page "/"
+@layout LoginLayout
+@inject NavigationManager Nav
 
-<div class="text-center mt-5">
-	<h3>Welcome to LunchApp!</h3>
-	<p>You are signed in.</p>
-</div>
+@code {
+    protected override void OnInitialized() =>
+      Nav.NavigateTo("/login", forceLoad: true);
+}

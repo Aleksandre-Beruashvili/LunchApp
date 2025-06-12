@@ -1,6 +1,7 @@
-using System.Security.Claims;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Components.Authorization;
+using System.Threading.Tasks;
 
 namespace LunchApp.Client.Services
 {
@@ -9,16 +10,13 @@ namespace LunchApp.Client.Services
         private readonly TokenStorageService _storage;
         private readonly HttpClient _http;
 
-        public JwtAuthStateProvider(
-            TokenStorageService storage,
-            HttpClient http)
+        public JwtAuthStateProvider(TokenStorageService storage, HttpClient http)
         {
             _storage = storage;
             _http = http;
         }
 
-        public override async Task<AuthenticationState>
-            GetAuthenticationStateAsync()
+        public override async Task<AuthenticationState> GetAuthenticationStateAsync()
         {
             var token = await _storage.GetTokenAsync();
             if (!string.IsNullOrWhiteSpace(token))
@@ -26,28 +24,30 @@ namespace LunchApp.Client.Services
                 _http.DefaultRequestHeaders.Authorization =
                     new AuthenticationHeaderValue("Bearer", token);
 
-                var claims = JwtParser.ParseClaimsFromJwt(token);
-                var id = new ClaimsIdentity(claims, "jwt");
-                return new AuthenticationState(new ClaimsPrincipal(id));
+                // Parse claims
+                var handler = new System.IdentityModel.Tokens.Jwt.JwtSecurityTokenHandler();
+                var jwt = handler.ReadJwtToken(token);
+                var identity = new ClaimsIdentity(jwt.Claims, "jwt");
+                return new AuthenticationState(new ClaimsPrincipal(identity));
             }
 
-            return new AuthenticationState(
-                new ClaimsPrincipal(new ClaimsIdentity()));
+            return new AuthenticationState(new ClaimsPrincipal(new ClaimsIdentity()));
         }
 
         public async Task SetTokenAsync(string token)
         {
             await _storage.SetTokenAsync(token);
-            NotifyAuthenticationStateChanged(
-               GetAuthenticationStateAsync());
+            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
 
         public async Task LogoutAsync()
         {
+            // 1. Remove token
             await _storage.RemoveTokenAsync();
+            // 2. Clear header
             _http.DefaultRequestHeaders.Authorization = null;
-            NotifyAuthenticationStateChanged(
-               GetAuthenticationStateAsync());
+            // 3. Notify
+            NotifyAuthenticationStateChanged(GetAuthenticationStateAsync());
         }
     }
 }

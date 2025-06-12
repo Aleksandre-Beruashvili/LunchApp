@@ -5,13 +5,28 @@
     <base href="/" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>LunchApp</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-          rel="stylesheet" />
-</head>
-<body class="bg-light">
-    <div id="app">Loading...</div>
 
+    <!-- Local Bootstrap CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Bootstrap Icons (if you use them) -->
+    <link href="css/bootstrap-icons.css" rel="stylesheet" />
+
+    <style>
+        body {
+            background: #f8f9fa;
+            padding-top: 56px;
+        }
+
+        .container {
+            max-width: 960px;
+        }
+    </style>
+</head>
+<body>
+    <div id="app">Loading...</div>
     <script src="_framework/blazor.webassembly.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Local Bootstrap JS bundle -->
+    <script src="js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

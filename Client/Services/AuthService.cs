@@ -23,37 +23,25 @@ namespace LunchApp.Client.Services
             if (!res.IsSuccessStatusCode)
             {
                 var err = await res.Content.ReadAsStringAsync();
-                return (false,
-                    string.IsNullOrWhiteSpace(err)
-                      ? "Invalid credentials."
-                      : err);
+                return (false, string.IsNullOrWhiteSpace(err) ? "Invalid credentials." : err);
             }
-
             var data = await res.Content.ReadFromJsonAsync<LoginResponse>();
-            if (data?.Token == null)
-                return (false, "No token returned.");
-
+            if (data?.Token == null) return (false, "No token returned.");
             await _authProv.SetTokenAsync(data.Token);
-            _http.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", data.Token);
-
+            _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", data.Token);
             return (true, "");
         }
 
         public async Task<(bool Success, string Message)> Register(RegisterDto dto)
         {
             var res = await _http.PostAsJsonAsync("api/account/register", dto);
-            if (res.IsSuccessStatusCode)
-                return (true, "");
-
+            if (res.IsSuccessStatusCode) return (true, "");
             var err = await res.Content.ReadAsStringAsync();
-            return (false,
-                string.IsNullOrWhiteSpace(err)
-                  ? "Registration failed."
-                  : err);
+            return (false, string.IsNullOrWhiteSpace(err) ? "Registration failed." : err);
         }
 
-        public Task Logout() => _authProv.LogoutAsync();
+        public Task Logout()
+            => _authProv.LogoutAsync();
 
         private class LoginResponse { public string Token { get; set; } }
     }

@@ -1,21 +1,29 @@
 ﻿@namespace LunchApp.Client.Shared
 @inherits LayoutComponentBase
 
-<div class="d-flex vh-100 bg-white">
-  <nav class="navbar navbar-expand-lg navbar-light bg-light w-100">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="/home">LunchApp</a>
-      <button class="navbar-toggler" type="button"
-              data-bs-toggle="collapse" data-bs-target="#navContent">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navContent">
-        <NavMenu />
-      </div>
-    </div>
-  </nav>
+<div class="d-flex flex-column vh-100">
+    <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand fw-bold" href="/menu">LunchApp</a>
+            <button class="navbar-toggler" type="button"
+                    data-bs-toggle="collapse" data-bs-target="#mainNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="mainNav">
+                <NavMenu />
+            </div>
+        </div>
+    </nav>
 
-  <main class="flex-fill p-4 overflow-auto">
-    @Body
-  </main>
+    <main class="flex-fill overflow-auto">
+        <div class="container my-5 pt-4">
+            @Body
+        </div>
+    </main>
+
+    <footer class="bg-light py-3 mt-auto">
+        <div class="container text-center text-muted small">
+            © 2025 LunchApp
+        </div>
+    </footer>
 </div>
