@@ -1,42 +1,65 @@
-@page "/register"
+﻿@page "/register"
+@using LunchApp.Shared.DTOs
 @inject AuthService AuthService
 @inject NavigationManager Nav
 
 <EditForm class="card p-4 mx-auto" style="max-width: 400px;" Model="regModel" OnValidSubmit="HandleRegister">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+
     <h3 class="text-center mb-3">Register</h3>
+
+    <!-- Full Name -->
+    <div class="mb-3">
+        <InputText class="form-control" @bind-Value="regModel.FullName" placeholder="Full Name" />
+    </div>
+
+    <!-- Email -->
     <div class="mb-3">
         <InputText class="form-control" @bind-Value="regModel.Email" placeholder="Email" />
     </div>
+
+    <!-- Password -->
     <div class="mb-3">
         <InputText class="form-control" @bind-Value="regModel.Password" type="password" placeholder="Password" />
     </div>
+
+    <!-- Confirm Password -->
     <div class="mb-3">
-        <InputText class="form-control" @bind-Value="regModel.ConfirmPassword" type="password" placeholder="Confirm Password" />
+        <InputText class="form-control" @bind-Value="confirmPassword" type="password" placeholder="Confirm Password" />
     </div>
+
     <button class="btn btn-primary w-100" type="submit">Register</button>
+
     <div class="text-center mt-2">
         <a href="/login">Already have an account? Login</a>
     </div>
 </EditForm>
+
 @if (!string.IsNullOrEmpty(error))
 {
     <div class="alert alert-danger mt-3" role="alert">@error</div>
 }
 
 @code {
-    RegisterModel regModel = new();
+    RegisterDto regModel = new(); // Use DTO directly
+    string confirmPassword = string.Empty;
     string error;
+
     async Task HandleRegister()
     {
         error = string.Empty;
-        if (regModel.Password != regModel.ConfirmPassword)
+
+        if (regModel.Password != confirmPassword)
         {
             error = "Passwords do not match";
             return;
         }
-        var success = await AuthService.Register(new RegisterDto { Email = regModel.Email, Password = regModel.Password });
-        if (success) Nav.NavigateTo("/login");
-        else error = "Register failed";
+
+        var success = await AuthService.Register(regModel);
+        if (success)
+            Nav.NavigateTo("/login");
+        else
+            error = "Register failed";
     }
-    public class RegisterModel { public string Email { get; set; } public string Password { get; set; } public string ConfirmPassword { get; set; } }
 }
