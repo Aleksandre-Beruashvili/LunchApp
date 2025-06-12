@@ -42,7 +42,7 @@ namespace OfficeCafeApp.API.Controllers
         {
             var userId = int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value);
             var result = await _orderService.CancelOrderAsync(userId, orderId);
-            return result ? Ok() : BadRequest("Cancellation failed");
+            return result.Success ? Ok() : BadRequest(result.Error);
         }
     }
 }
