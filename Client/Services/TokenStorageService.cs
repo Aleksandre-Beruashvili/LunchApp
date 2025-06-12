@@ -1,24 +1,21 @@
 using Microsoft.JSInterop;
+using System.Threading.Tasks;
 
 namespace LunchApp.Client.Services
 {
     public class TokenStorageService
     {
+        private const string KEY = "authToken";
         private readonly IJSRuntime _js;
-        private const string TokenKey = "authToken";
+        public TokenStorageService(IJSRuntime js) => _js = js;
 
-        public TokenStorageService(IJSRuntime js)
-        {
-            _js = js;
-        }
+        public ValueTask SetTokenAsync(string token) =>
+            _js.InvokeVoidAsync("localStorage.setItem", KEY, token);
 
-        public ValueTask<string?> GetTokenAsync()
-            => _js.InvokeAsync<string?>("localStorage.getItem", TokenKey);
+        public ValueTask<string> GetTokenAsync() =>
+            _js.InvokeAsync<string>("localStorage.getItem", KEY);
 
-        public ValueTask SetTokenAsync(string token)
-            => _js.InvokeVoidAsync("localStorage.setItem", TokenKey, token);
-
-        public ValueTask RemoveTokenAsync()
-            => _js.InvokeVoidAsync("localStorage.removeItem", TokenKey);
+        public ValueTask RemoveTokenAsync() =>
+            _js.InvokeVoidAsync("localStorage.removeItem", KEY);
     }
 }

@@ -5,11 +5,11 @@ namespace LunchApp.Client.Services
 {
     public static class JwtParser
     {
-        public static IEnumerable<Claim> ParseClaimsFromJwt(string token)
+        public static IEnumerable<Claim> ParseClaimsFromJwt(string jwt)
         {
             var handler = new JwtSecurityTokenHandler();
-            var jwt = handler.ReadJwtToken(token);
-            return jwt.Claims;
+            var token = handler.ReadJwtToken(jwt);
+            return token.Claims;
         }
     }
 }

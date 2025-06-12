@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Shared\LunchApp.Shared.csproj" />
-    <ProjectReference Include="..\Client\LunchApp.Frontend.csproj" />
+    <ProjectReference Include="..\Client\LunchApp.Client.csproj" />
   </ItemGroup>
 
 </Project>

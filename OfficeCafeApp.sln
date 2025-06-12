@@ -5,7 +5,7 @@ VisualStudioVersion = 17.14.36202.13
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OfficeCafeApp.API", "Server\OfficeCafeApp.API.csproj", "{4B922B00-E3F3-462A-8357-9510EF0663E9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LunchApp.Frontend", "Client\LunchApp.Frontend.csproj", "{967CD94F-C96A-C59D-753C-A1EF00FA1D3D}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LunchApp.Client", "Client\LunchApp.Client.csproj", "{967CD94F-C96A-C59D-753C-A1EF00FA1D3D}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LunchApp.Shared", "Shared\LunchApp.Shared.csproj", "{8BFF7E24-75A0-49D3-9213-26AB58DB26A0}"
 EndProject

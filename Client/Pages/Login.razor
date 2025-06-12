@@ -1,48 +1,50 @@
 ﻿@page "/login"
 @using LunchApp.Shared.DTOs
-@inject AuthService AuthService
+@inject LunchApp.Client.Services.AuthService AuthService
 @inject NavigationManager Nav
 
-<EditForm Model="loginModel" OnValidSubmit="HandleLogin" class="card p-4 mx-auto" style="max-width:400px;">
+<EditForm Model="model" OnValidSubmit="HandleLogin"
+          class="card mx-auto p-4 shadow-sm" style="max-width:400px;">
     <DataAnnotationsValidator />
     <ValidationSummary />
 
     <h3 class="text-center mb-3">Login</h3>
 
     <div class="mb-3">
-        <InputText class="form-control" @bind-Value="loginModel.Email" placeholder="Email" />
+        <InputText @bind-Value="model.Email"
+                   class="form-control"
+                   placeholder="Email" />
+        <ValidationMessage For="@(() => model.Email)" />
     </div>
     <div class="mb-3">
-        <InputText class="form-control" @bind-Value="loginModel.Password" type="password" placeholder="Password" />
+        <InputText @bind-Value="model.Password"
+                   type="password"
+                   class="form-control"
+                   placeholder="Password" />
+        <ValidationMessage For="@(() => model.Password)" />
     </div>
-    <button class="btn btn-primary w-100" type="submit">Login</button>
-    <div class="text-center mt-2">
-        <a href="/register">Need an account? Register</a>
-    </div>
+
+    <button class="btn btn-primary w-100" type="submit">
+        Login
+    </button>
+
+    @if (!string.IsNullOrEmpty(error))
+    {
+        <div class="alert alert-danger mt-3">@error</div>
+    }
 </EditForm>
 
-@if (!string.IsNullOrEmpty(error))
-{
-    <div class="alert alert-danger mt-3">@error</div>
-}
-
 @code {
-    LoginDto loginModel = new();
-    string error;
+    private LoginDto model = new();
+    private string error;
 
-    async Task HandleLogin()
+    private async Task HandleLogin()
     {
-        error = string.Empty;
-        var (success, message) = await AuthService.Login(loginModel);
-
-        if (success)
-        {
-            Nav.NavigateTo("/menu");
-        }
+        error = null;
+        var (ok, msg) = await AuthService.Login(model);
+        if (ok)
+            Nav.NavigateTo("/home");
         else
-        {
-            // Show the actual message from the API or client
-            error = message;
-        }
+            error = msg;
     }
 }

@@ -1,21 +1,7 @@
-@page "/"
-@using Microsoft.AspNetCore.Components.Authorization
+@page "/home"
+@attribute [Authorize]
 
-<div class="d-flex justify-content-center align-items-center vh-100 bg-light">
-    <div class="text-center">
-        <h1 class="mb-4">Welcome to LunchApp</h1>
-
-        <AuthorizeView>
-            <Authorized>
-                <!-- If user is already logged in, redirect or show message -->
-                <p class="text-success">You are already logged in.</p>
-                <a class="btn btn-primary mx-2" href="/menu">Go to Menu</a>
-            </Authorized>
-            <NotAuthorized>
-                <!-- Login and Register buttons -->
-                <a class="btn btn-primary btn-lg mx-2" href="/login">Login</a>
-                <a class="btn btn-secondary btn-lg mx-2" href="/register">Register</a>
-            </NotAuthorized>
-        </AuthorizeView>
-    </div>
+<div class="text-center mt-5">
+	<h3>Welcome to LunchApp!</h3>
+	<p>You are signed in.</p>
 </div>

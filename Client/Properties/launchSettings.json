@@ -1,6 +1,6 @@
 {
     "profiles": {
-        "LunchApp.Frontend": {
+        "LunchApp.Client": {
             "commandName": "Project",
             "dotnetRunMessages": true,
             "launchBrowser": true,
