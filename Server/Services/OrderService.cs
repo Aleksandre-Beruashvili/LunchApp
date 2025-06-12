@@ -32,7 +32,7 @@ namespace OfficeCafeApp.API.Services
                     UserId = userId,
                     SlotId = dto.SlotId,
                     QRCode = Guid.NewGuid().ToString(),
-                    Status = OrderStatus.Preparing
+                    Status = OrderStatus.Preparing.ToString()
                 };
                 _context.Orders.Add(order);
 
@@ -78,7 +78,7 @@ namespace OfficeCafeApp.API.Services
                 {
                     Id = o.Id,
                     OrderDate = o.OrderDate,
-                    Status = o.Status.ToString(),
+                    Status = o.Status,
                     QRCode = o.QRCode,
                     Slot = $"{o.Slot.StartTime:hh\\:mm}-{o.Slot.EndTime:hh\\:mm}",
                     Items = o.OrderItems.Select(oi => new OrderItemDto
@@ -104,7 +104,7 @@ namespace OfficeCafeApp.API.Services
             if ((slotStart - now).TotalMinutes < 30)
                 return new ServiceResult { Success = false, Error = "Too late to cancel." };
 
-            order.Status = OrderStatus.Cancelled;
+            order.Status = OrderStatus.Cancelled.ToString();
             slot.CurrentCount--;
             await _context.SaveChangesAsync();
             return new ServiceResult { Success = true };
