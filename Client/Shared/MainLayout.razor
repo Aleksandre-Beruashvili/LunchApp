@@ -1,7 +1,16 @@
-@inherits LayoutComponentBase
-<div class="page">
-    <NavMenu />
-    <main class="container mt-4">
+﻿@inherits LayoutComponentBase
+@using Microsoft.AspNetCore.Components.Authorization
+
+<AuthorizeView>
+    <Authorized>
+        <!-- ✅ Navbar shown only when user is logged in -->
+        <NavMenu />
+    </Authorized>
+</AuthorizeView>
+
+<!-- Page content -->
+<div class="main">
+    <div class="content px-4">
         @Body
-    </main>
+    </div>
 </div>

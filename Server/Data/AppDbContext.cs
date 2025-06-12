@@ -12,7 +12,7 @@ namespace OfficeCafeApp.API.Data
         public DbSet<Slot> Slots { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
-        public DbSet<LunchApp.Shared.Models.Rating> Ratings { get; set; }
+        public DbSet<Rating> Ratings { get; set; }
         public DbSet<MenuSchedule> MenuSchedules { get; set; } 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

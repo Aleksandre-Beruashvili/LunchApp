@@ -1,48 +1,21 @@
 @page "/"
 @using Microsoft.AspNetCore.Components.Authorization
 
-<div class="p-5 mb-4 bg-light rounded-3 text-center hero">
-    <div class="container-fluid py-5">
-        <h1 class="display-5 fw-bold mb-3">Welcome to LunchApp</h1>
-        <p class="fs-5 mb-4">Manage your lunch orders with ease.</p>
+<div class="d-flex justify-content-center align-items-center vh-100 bg-light">
+    <div class="text-center">
+        <h1 class="mb-4">Welcome to LunchApp</h1>
+
         <AuthorizeView>
             <Authorized>
-                <a class="btn btn-success btn-lg mx-2" href="/menu">View Menu</a>
-                <a class="btn btn-primary btn-lg mx-2" href="/order">Place Order</a>
+                <!-- If user is already logged in, redirect or show message -->
+                <p class="text-success">You are already logged in.</p>
+                <a class="btn btn-primary mx-2" href="/menu">Go to Menu</a>
             </Authorized>
             <NotAuthorized>
+                <!-- Login and Register buttons -->
                 <a class="btn btn-primary btn-lg mx-2" href="/login">Login</a>
                 <a class="btn btn-secondary btn-lg mx-2" href="/register">Register</a>
             </NotAuthorized>
         </AuthorizeView>
-</div>
-</div>
-
-<div class="container my-5">
-    <div class="row text-center">
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 shadow-sm feature-card">
-                <div class="card-body">
-                    <h4 class="card-title">Browse Today's Menu</h4>
-                    <p class="card-text">See what's cooking and choose from a variety of dishes.</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 shadow-sm feature-card">
-                <div class="card-body">
-                    <h4 class="card-title">Quick Ordering</h4>
-                    <p class="card-text">Select your preferred pickup time and place your order in seconds.</p>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-4 mb-4">
-            <div class="card h-100 shadow-sm feature-card">
-                <div class="card-body">
-                    <h4 class="card-title">Manage Your Account</h4>
-                    <p class="card-text">Log in to track your orders and update your details.</p>
-                </div>
-            </div>
-        </div>
     </div>
 </div>
