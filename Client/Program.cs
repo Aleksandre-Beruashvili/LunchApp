@@ -8,7 +8,12 @@ var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
 
-builder.Services.AddScoped(sp => new HttpClient { BaseAddress = new Uri(builder.HostEnvironment.BaseAddress) });
+// ✅ Use your actual API base URL here
+builder.Services.AddScoped(sp => new HttpClient
+{
+    BaseAddress = new Uri("https://localhost:7155/")
+});
+
 builder.Services.AddAuthorizationCore();
 builder.Services.AddScoped<TokenStorageService>();
 builder.Services.AddScoped<JwtAuthStateProvider>();

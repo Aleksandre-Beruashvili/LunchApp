@@ -42,7 +42,7 @@
 }
 
 @code {
-    RegisterDto regModel = new(); // Use DTO directly
+    RegisterDto regModel = new(); // DTO model
     string confirmPassword = string.Empty;
     string error;
 
@@ -58,8 +58,12 @@
 
         var success = await AuthService.Register(regModel);
         if (success)
+        {
             Nav.NavigateTo("/login");
+        }
         else
-            error = "Register failed";
+        {
+            error = "Registration failed. Email may already be used.";
+        }
     }
 }
