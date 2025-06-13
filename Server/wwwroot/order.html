@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pick Time Slot</title>
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container mt-5">
+    <h2 class="mb-4">Choose Pickup Time</h2>
+    <div class="list-group" id="slots"></div>
+  </div>
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script>
+    async function loadSlots() {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/timeslot', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const slots = await res.json();
+      const container = document.getElementById('slots');
+      const dishId = localStorage.getItem('selectedDishId');
+      slots.forEach(slot => {
+        const item = document.createElement('div');
+        item.className = 'list-group-item d-flex justify-content-between align-items-center';
+        item.innerHTML = `
+          <div>
+            <strong>${slot.time}</strong>
+            <span class="badge bg-secondary ms-2">${slot.orderCount} orders</span>
+          </div>
+          <button class="btn btn-outline-primary btn-sm" onclick="placeOrder('${slot.id}', '${dishId}')">Select</button>
+        `;
+        container.appendChild(item);
+      });
+    }
+    async function placeOrder(slotId, dishId) {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/orders', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ dishId, timeSlotId: slotId })
+      });
+      if (res.ok) {
+        alert('Order placed!');
+        window.location.href = 'orders.html';
+      } else {
+        alert('Error placing order');
+      }
+    }
+    loadSlots();
+  </script>
+</body>
+</html>

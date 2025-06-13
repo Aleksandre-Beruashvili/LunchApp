@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pickup QR Code</title>
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<body>
+  <div class="container mt-5 text-center">
+    <h2 class="mb-4">Your Pickup QR Code</h2>
+    <div id="qrCode"></div>
+    <button id="cancelBtn" class="btn btn-danger mt-3">Cancel Order</button>
+  </div>
+  <script src="js/bootstrap.bundle.min.js"></script>
+  <script>
+    async function loadQRCode() {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/orders/latest', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const order = await res.json();
+      document.getElementById('qrCode').innerHTML = `
+        <img src="${order.qrCodeUrl}" class="img-fluid" alt="QR Code">
+        <p class="mt-2">Pickup at: <strong>${order.timeSlot}</strong></p>
+      `;
+      localStorage.setItem('orderId', order.id);
+    }
+    document.getElementById('cancelBtn').addEventListener('click', async () => {
+      const token = localStorage.getItem('token');
+      const orderId = localStorage.getItem('orderId');
+      const res = await fetch(`/api/orders/${orderId}`, { method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token } });
+      if (res.ok) window.location.href = 'menu.html';
+      else alert('Too late to cancel');
+    });
+    loadQRCode();
+  </script>
+</body>
+</html>
