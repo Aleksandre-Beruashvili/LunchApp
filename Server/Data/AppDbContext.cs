@@ -7,13 +7,13 @@ namespace OfficeCafeApp.API.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
-        public DbSet<User> Users { get; set; }
-        public DbSet<Dish> Dishes { get; set; }
-        public DbSet<Slot> Slots { get; set; }
-        public DbSet<Order> Orders { get; set; }
-        public DbSet<OrderItem> OrderItems { get; set; }
-        public DbSet<Rating> Ratings { get; set; }
-        public DbSet<MenuSchedule> MenuSchedules { get; set; } 
+        public DbSet<User> Users => Set<User>();
+        public DbSet<Dish> Dishes => Set<Dish>();
+        public DbSet<Slot> Slots => Set<Slot>();
+        public DbSet<Order> Orders => Set<Order>();
+        public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+        public DbSet<Rating> Ratings => Set<Rating>();
+        public DbSet<MenuSchedule> MenuSchedules => Set<MenuSchedule>();
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -22,10 +22,11 @@ namespace OfficeCafeApp.API.Data
             modelBuilder.Entity<OrderItem>()
                 .HasKey(oi => new { oi.OrderId, oi.DishId });
 
-            modelBuilder.Entity<Order>()
-                .HasMany(o => o.OrderItems)
-                .WithOne(oi => oi.Order)
-                .HasForeignKey(oi => oi.OrderId);
+            modelBuilder.Entity<MenuSchedule>()
+                .HasOne(ms => ms.Dish)
+                .WithMany(d => d.MenuSchedules)
+                .HasForeignKey(ms => ms.DishId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

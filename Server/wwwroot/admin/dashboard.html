@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manager Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .nav-link {
+            transition: all 0.2s;
+        }
+
+            .nav-link.active {
+                background-color: #3f3f46;
+                color: #f97316;
+                font-weight: 600;
+            }
+
+        #mainContent {
+            scrollbar-width: thin;
+            scrollbar-color: #4b5563 #1f2937;
+        }
+
+            #mainContent::-webkit-scrollbar {
+                width: 8px;
+            }
+
+            #mainContent::-webkit-scrollbar-thumb {
+                background-color: #4b5563;
+                border-radius: 4px;
+            }
+    </style>
+</head>
+<body class="bg-zinc-900 text-white h-screen flex overflow-hidden">
+    <!-- Sidebar -->
+    <aside class="w-64 bg-zinc-950 p-6 flex flex-col hidden md:flex">
+        <div class="mb-8">
+            <h1 class="text-2xl font-bold text-orange-500">LunchApp Manager</h1>
+            <p class="text-zinc-400 text-sm mt-2">Food service dashboard</p>
+        </div>
+
+        <nav class="space-y-1 flex-1">
+            <a href="#" data-page="overview" class="nav-link block px-4 py-3 rounded-lg hover:bg-zinc-800">
+                📊 Overview
+            </a>
+            <a href="#" data-page="orders" class="nav-link block px-4 py-3 rounded-lg hover:bg-zinc-800">
+                🛒 Orders
+            </a>
+            <a href="#" data-page="menu" class="nav-link block px-4 py-3 rounded-lg hover:bg-zinc-800">
+                🗓️ Today's Menu
+            </a>
+            <a href="#" data-page="dishes" class="nav-link block px-4 py-3 rounded-lg hover:bg-zinc-800">
+                🍽️ Dishes
+            </a>
+            <a href="#" data-page="feedback" class="nav-link block px-4 py-3 rounded-lg hover:bg-zinc-800">
+                💬 Feedback
+            </a>
+        </nav>
+
+        <button id="logoutBtn" class="mt-auto border border-red-500 text-red-500 hover:bg-red-500 hover:text-white py-2 rounded-lg transition">
+            Logout
+        </button>
+    </aside>
+
+    <!-- Mobile Header -->
+    <header class="bg-zinc-900 border-b border-zinc-800 p-4 flex md:hidden justify-between items-center">
+        <h1 class="text-xl font-bold text-orange-500">LunchApp</h1>
+        <button id="mobileMenuBtn" class="text-white">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7" />
+            </svg>
+        </button>
+    </header>
+
+    <!-- Main content -->
+    <main class="flex-1 flex flex-col overflow-hidden">
+        <div id="mainContent" class="flex-1 overflow-y-auto p-4 md:p-6"></div>
+    </main>
+
+    <script>
+        // Elements
+        const mainContent = document.getElementById("mainContent");
+        const mobileMenuBtn = document.getElementById("mobileMenuBtn");
+        const sidebar = document.querySelector("aside");
+        const navLinks = document.querySelectorAll(".nav-link");
+
+        // Functions
+        async function loadPage(page) {
+            try {
+                const res = await fetch(`/admin/Pages/${page}.html`);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+                mainContent.innerHTML = await res.text();
+                rehydrateScripts();
+            } catch (err) {
+                mainContent.innerHTML = `
+                        <div class="bg-red-900/20 border border-red-500/30 rounded-lg p-4">
+                            <h2 class="text-xl font-bold text-red-400">Error loading page</h2>
+                            <p class="mt-2 text-red-300">${err.message}</p>
+                        </div>
+                    `;
+            }
+        }
+
+        function rehydrateScripts() {
+            const scripts = mainContent.querySelectorAll("script");
+            scripts.forEach(oldScript => {
+                const newScript = document.createElement("script");
+                if (oldScript.src) {
+                    newScript.src = oldScript.src;
+                } else {
+                    newScript.textContent = oldScript.textContent;
+                }
+                document.body.appendChild(newScript).remove();
+            });
+        }
+
+        function activateNavLink(targetPage) {
+            navLinks.forEach(link => {
+                link.classList.toggle("active", link.dataset.page === targetPage);
+            });
+        }
+
+        // Event Listeners
+        navLinks.forEach(link => {
+            link.addEventListener("click", e => {
+                e.preventDefault();
+                const page = e.currentTarget.dataset.page;
+                activateNavLink(page);
+                loadPage(page);
+                if (window.innerWidth < 768) sidebar.classList.add("hidden");
+            });
+        });
+
+        mobileMenuBtn.addEventListener("click", () => {
+            sidebar.classList.toggle("hidden");
+            sidebar.classList.toggle("absolute");
+            sidebar.classList.toggle("z-50");
+            sidebar.classList.toggle("inset-0");
+        });
+
+        document.getElementById("logoutBtn").addEventListener("click", () => {
+            localStorage.removeItem("token");
+            location.href = "/admin/admin-login.html";
+        });
+
+        // Initialize
+        document.addEventListener("DOMContentLoaded", () => {
+            const defaultPage = "dishes";
+            activateNavLink(defaultPage);
+            loadPage(defaultPage);
+        });
+
+        // Responsive handling
+        window.addEventListener("resize", () => {
+            if (window.innerWidth >= 768) {
+                sidebar.classList.remove("hidden", "absolute", "z-50", "inset-0");
+            }
+        });
+    </script>
+</body>
+</html>

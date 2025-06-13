@@ -27,4 +27,8 @@
     <ProjectReference Include="..\Shared\LunchApp.Shared.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="wwwroot\uploads\" />
+  </ItemGroup>
+
 </Project>

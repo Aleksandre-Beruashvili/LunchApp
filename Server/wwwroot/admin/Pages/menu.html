@@ -1,0 +1,114 @@
+<h2 class="text-3xl font-bold mb-6">Menu Management</h2>
+
+<!-- Dish Form -->
+<form id="dishForm" class="bg-zinc-800 p-6 rounded shadow mb-8">
+    <input type="hidden" id="dishId">
+    <div class="grid grid-cols-2 gap-4">
+        <input type="text" id="name" placeholder="Name" class="bg-zinc-900 p-2 rounded" required />
+        <select id="portion" class="p-2 rounded bg-zinc-900 text-white" required>
+            <option value="">Select Portion</option>
+            <option value="g">Grams (g)</option>
+            <option value="ml">Milliliters (ml)</option>
+            <option value="pcs">Pieces (pcs)</option>
+        </select>
+        <input type="number" id="price" placeholder="Price" class="bg-zinc-900 p-2 rounded" step="0.01" required />
+        <input type="number" id="leftover" placeholder="Quantity Today" class="bg-zinc-900 p-2 rounded" required />
+        <input type="url" id="imageUrl" placeholder="Image URL" class="col-span-2 bg-zinc-900 p-2 rounded" />
+        <textarea id="description" placeholder="Description" class="col-span-2 bg-zinc-900 p-2 rounded"></textarea>
+    </div>
+    <div class="flex justify-between mt-4">
+        <label><input type="checkbox" id="available" class="mr-2" />Available</label>
+        <button type="submit" class="bg-orange-500 px-4 py-2 rounded">Save Dish</button>
+    </div>
+</form>
+
+<!-- Dish List -->
+<div id="dishList" class="grid grid-cols-2 gap-6"></div>
+
+<script>
+    const token = localStorage.getItem("token");
+
+    document.getElementById("dishForm").onsubmit = async e => {
+        e.preventDefault();
+
+        const id = document.getElementById("dishId").value;
+        const dish = {
+            Name: document.getElementById("name").value,
+            Portion: document.getElementById("portion").value,
+            Price: parseFloat(document.getElementById("price").value),
+            Leftover: parseInt(document.getElementById("leftover").value),
+            ImageUrl: document.getElementById("imageUrl").value,
+            Description: document.getElementById("description").value,
+            Available: document.getElementById("available").checked
+        };
+
+        const url = id ? `/api/dishes/${id}` : "/api/dishes";
+        const method = id ? "PUT" : "POST";
+
+        const res = await fetch(url, {
+            method,
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: "Bearer " + token
+            },
+            body: JSON.stringify(dish)
+        });
+
+        if (res.ok) {
+            document.getElementById("dishForm").reset();
+            document.getElementById("dishId").value = "";
+            loadDishes();
+        } else {
+            const err = await res.text();
+            alert("Failed: " + err);
+        }
+    };
+
+    async function loadDishes() {
+        const res = await fetch("/api/dishes/today", {
+            headers: { Authorization: "Bearer " + token }
+        });
+        const data = await res.json();
+
+        const dishList = document.getElementById("dishList");
+        dishList.innerHTML = data.map(d => `
+      <div class="bg-zinc-800 p-4 rounded shadow">
+        <div class="flex justify-between mb-2">
+          <h3 class="text-lg font-semibold">${d.name}</h3>
+          <span class="text-sm text-gray-400">${d.portion}</span>
+        </div>
+        <p class="text-gray-300 text-sm mb-2">${d.description || "No description"}</p>
+        ${d.imageUrl ? `<img src="${d.imageUrl}" class="w-full h-32 object-cover rounded mb-2" />` : ''}
+        <p>Price: $${d.price.toFixed(2)} | Left: ${d.leftover}</p>
+        <p class="${d.available ? 'text-green-400' : 'text-red-400'}">${d.available ? 'Available' : 'Unavailable'}</p>
+        <div class="mt-3 flex justify-between">
+          <button onclick='editDish(${JSON.stringify(d)})' class="text-yellow-400">Edit</button>
+          <button onclick='deleteDish(${d.id})' class="text-red-500">Delete</button>
+        </div>
+      </div>
+    `).join("");
+    }
+
+    function editDish(d) {
+        document.getElementById("dishId").value = d.id;
+        document.getElementById("name").value = d.name;
+        document.getElementById("portion").value = d.portion;
+        document.getElementById("price").value = d.price;
+        document.getElementById("leftover").value = d.leftover;
+        document.getElementById("imageUrl").value = d.imageUrl;
+        document.getElementById("description").value = d.description;
+        document.getElementById("available").checked = d.available;
+        window.scrollTo(0, 0);
+    }
+
+    async function deleteDish(id) {
+        if (!confirm("Delete this dish?")) return;
+        await fetch(`/api/dishes/${id}`, {
+            method: "DELETE",
+            headers: { Authorization: "Bearer " + token }
+        });
+        loadDishes();
+    }
+
+    loadDishes();
+</script>

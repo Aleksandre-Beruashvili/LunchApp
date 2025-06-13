@@ -1,53 +1,60 @@
-﻿using System.IO;
-using System.Collections.Generic;
-using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.FileProviders;
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
+﻿using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.IdentityModel.Tokens;
 using OfficeCafeApp.API.Data;
 using OfficeCafeApp.API.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 var config = builder.Configuration;
-var env = builder.Environment;
-var services = builder.Services;
 
+// ----------------------------
 // 1. Register Services
-// ---------------------
-services.AddDbContext<AppDbContext>(opts =>
+// ----------------------------
+
+builder.Services.AddDbContext<AppDbContext>(opts =>
     opts.UseSqlServer(config.GetConnectionString("DefaultConnection")));
 
-services.AddScoped<IAuthService, AuthService>();
-services.AddScoped<IAdminService, AdminService>();
-services.AddScoped<IOrderService, OrderService>();
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IAdminService, AdminService>();
+builder.Services.AddScoped<IOrderService, OrderService>();
 
-services.AddCors(options => options.AddPolicy("AllowAll",
-    builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+        policy.AllowAnyOrigin()
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
 
-services.AddControllers();
+builder.Services.AddControllers();
 
-var jwtKey = config["Jwt:Key"];
-if (string.IsNullOrWhiteSpace(jwtKey))
-    throw new InvalidOperationException("JWT key is not configured.");
-
+// JWT Authentication
+var jwtKey = config["Jwt:Key"] ?? throw new InvalidOperationException("JWT key is not configured.");
 var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
-services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.Events = new JwtBearerEvents
         {
             OnChallenge = context =>
             {
-                context.HandleResponse(); // Stop default 401 response
-                context.Response.Redirect("/admin/admin-login.html"); // Redirect to login page
+                // Prevent default 401 response
+                context.HandleResponse();
+
+                // If frontend is requesting admin and is not authorized, redirect to login
+                if (!context.Response.HasStarted)
+                {
+                    context.Response.StatusCode = 302;
+                    context.Response.Headers.Location = "/admin/admin-login.html";
+                }
+
                 return Task.CompletedTask;
             }
         };
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = false,
@@ -58,55 +65,67 @@ services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-services.AddAuthorization();
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
-// 2. Middleware Setup
-// ---------------------
-if (env.IsDevelopment())
+// ----------------------------
+// 2. Middleware Pipeline
+// ----------------------------
+
+if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
 }
 else
 {
-    app.UseHsts();  // good practice in production
+    app.UseHsts();
 }
 
 app.UseHttpsRedirection();
-app.UseStaticFiles();     // for wwwroot/
-app.UseDefaultFiles();    // for index.html under wwwroot/
 
-app.UseRouting();         // MUST be before auth for routing to work
+// Serve default index.html if exists
+app.UseDefaultFiles();
 
-app.UseCors("AllowAll");
-app.UseAuthentication();
-app.UseAuthorization();
+// Serve wwwroot static files (e.g., /admin/admin-login.html)
+app.UseStaticFiles();
 
-// 3. Admin UI static file serving
-// ---------------------
-var adminPath = Path.Combine(env.WebRootPath, "manager");
+// Serve /uploads/* (uploaded images)
+var uploadPath = Path.Combine(app.Environment.WebRootPath, "uploads");
+Directory.CreateDirectory(uploadPath);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(uploadPath),
+    RequestPath = "/uploads"
+});
+
+// Serve /admin static files from wwwroot/admin
+var adminPath = Path.Combine(app.Environment.WebRootPath, "admin");
 if (Directory.Exists(adminPath))
 {
-    var adminFiles = new PhysicalFileProvider(adminPath);
-
     app.UseStaticFiles(new StaticFileOptions
     {
-        FileProvider = adminFiles,
+        FileProvider = new PhysicalFileProvider(adminPath),
         RequestPath = "/admin"
     });
 }
 else
 {
-    // Optional: Log warning if manager folder is missing
-    Console.WriteLine("Warning: 'wwwroot/manager' directory not found. Admin UI won't be served.");
+    Console.WriteLine("⚠️ Warning: /wwwroot/admin directory is missing.");
 }
 
-// 4. API & Fallback Routes
-// ---------------------
+app.UseRouting();
+app.UseCors("AllowAll");
+app.UseAuthentication();
+app.UseAuthorization();
+
+// ----------------------------
+// 3. API & Fallback
+// ----------------------------
+
 app.MapControllers();
 
-// Fallback to employee login if path doesn't match anything
+// fallback to login page if nothing matched (e.g., deep link to SPA)
 app.MapFallbackToFile("employee/login.html");
 
 app.Run();

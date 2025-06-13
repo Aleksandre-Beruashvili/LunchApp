@@ -1,0 +1,301 @@
+﻿<div class="container mx-auto px-4 py-8">
+    <h2 class="text-2xl font-bold mb-6 flex flex-col sm:flex-row justify-between gap-4">
+        <button id="openModal" class="bg-orange-500 px-4 py-2 rounded text-sm w-full sm:w-auto">
+            + Add Dish
+        </button>
+        <input type="text" id="searchInput" placeholder="Search dishes..."
+               class="p-2 rounded bg-zinc-800 border border-zinc-700 text-white w-full sm:w-64" />
+    </h2>
+
+    <div id="dishList" class="grid grid-cols-1 gap-4"></div>
+
+    <div id="paginationControls" class="flex justify-center mt-6 space-x-4">
+        <button id="prevPage" class="bg-zinc-700 px-4 py-2 rounded disabled:opacity-50">Previous</button>
+        <span id="pageInfo" class="text-white font-semibold my-auto"></span>
+        <button id="nextPage" class="bg-zinc-700 px-4 py-2 rounded disabled:opacity-50">Next</button>
+    </div>
+</div>
+
+<!-- Dish Modal -->
+<div id="dishModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
+    <div class="bg-zinc-800 p-6 rounded w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <h3 class="text-xl font-semibold mb-4" id="modalTitle">Add Dish</h3>
+        <form id="dishForm" class="space-y-4">
+            <input type="hidden" id="dishId" />
+            <div>
+                <label class="block text-sm mb-1">Dish Name</label>
+                <input type="text" id="name" required
+                       class="w-full p-2 rounded bg-zinc-900 border border-zinc-700">
+            </div>
+            <div>
+                <label class="block text-sm mb-1">Portion Type</label>
+                <select id="portion" required
+                        class="w-full p-2 rounded bg-zinc-900 border border-zinc-700">
+                    <option value="">Select Portion</option>
+                    <option value="g">g</option>
+                    <option value="ml">ml</option>
+                    <option value="pcs">pcs</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm mb-1">Price</label>
+                <input type="number" id="price" step="0.01" min="0.01" required
+                       class="w-full p-2 rounded bg-zinc-900 border border-zinc-700">
+            </div>
+            <div>
+                <label class="block text-sm mb-1">Image</label>
+                <input type="file" id="imageFile" accept="image/*"
+                       class="w-full p-2 rounded bg-zinc-900 border border-zinc-700">
+                <div id="currentImage" class="mt-2 hidden"></div>
+            </div>
+            <div>
+                <label class="block text-sm mb-1">Description</label>
+                <textarea id="description"
+                          class="w-full p-2 rounded bg-zinc-900 border border-zinc-700 h-24"></textarea>
+            </div>
+            <div class="flex justify-end gap-2 pt-4">
+                <button type="button" id="closeModal" class="bg-zinc-700 px-4 py-2 rounded">Cancel</button>
+                <button type="submit" class="bg-orange-500 px-4 py-2 rounded">Save Dish</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    let allDishes = [];
+    let currentPage = 1;
+    const pageSize = 5;
+    const modal = document.getElementById("dishModal");
+    const currentImageContainer = document.getElementById("currentImage");
+
+    // Event Listeners
+    document.getElementById("openModal").addEventListener("click", () => openModal());
+    document.getElementById("closeModal").addEventListener("click", () => closeModal());
+    document.getElementById("searchInput").addEventListener("input", handleSearch);
+    document.getElementById("prevPage").addEventListener("click", () => changePage(-1));
+    document.getElementById("nextPage").addEventListener("click", () => changePage(1));
+    document.getElementById('dishForm').addEventListener('submit', handleDishSubmit);
+    window.addEventListener("keydown", e => e.key === "Escape" && closeModal());
+
+    // Functions
+    function openModal(dish = null) {
+        document.getElementById("dishForm").reset();
+        currentImageContainer.classList.add("hidden");
+        currentImageContainer.innerHTML = "";
+
+        if (dish) {
+            document.getElementById("dishId").value = dish.id;
+            document.getElementById("name").value = dish.name;
+            document.getElementById("portion").value = dish.portion;
+            document.getElementById("price").value = dish.price;
+            document.getElementById("description").value = dish.description || "";
+            document.getElementById("modalTitle").textContent = "Edit Dish";
+
+            if (dish.imageUrl) {
+                currentImageContainer.classList.remove("hidden");
+                currentImageContainer.innerHTML = `
+                    <p class="text-sm mb-1">Current Image:</p>
+                    <img src="${dish.imageUrl}" alt="${dish.name}"
+                         class="w-24 h-24 object-cover rounded border border-zinc-700">
+                `;
+            }
+        } else {
+            document.getElementById("modalTitle").textContent = "Add Dish";
+        }
+
+        modal.classList.remove("hidden");
+    }
+
+    function closeModal() {
+        modal.classList.add("hidden");
+    }
+
+    async function handleDishSubmit(e) {
+        e.preventDefault();
+
+        const formData = new FormData();
+        formData.append("Name", document.getElementById("name").value);
+        formData.append("Portion", document.getElementById("portion").value);
+        formData.append("Price", parseFloat(document.getElementById("price").value));
+        formData.append("Description", document.getElementById("description").value);
+
+        const fileInput = document.getElementById("imageFile");
+        if (fileInput.files[0]) {
+            formData.append("Image", fileInput.files[0]);
+        }
+
+        const id = document.getElementById("dishId").value;
+        const url = id ? `/api/dishes/${id}` : `/api/dishes`;
+        const method = id ? "PUT" : "POST";
+
+        try {
+            const res = await fetch(url, {
+                method,
+                headers: { Authorization: "Bearer " + window.token },
+                body: formData
+            });
+
+            if (res.ok) {
+                closeModal();
+                await loadDishes();
+            } else {
+                const error = await res.text();
+                alert(`Error: ${res.status} - ${error}`);
+            }
+        } catch (err) {
+            alert("Network error: " + err.message);
+        }
+    }
+    async function loadDishes() {
+        try {
+            const res = await fetch("/api/dishes/all", {
+                headers: {
+                    Authorization: "Bearer " + localStorage.getItem("token")
+                }
+            });
+
+            const contentType = res.headers.get("Content-Type");
+
+            if (res.status === 401 || res.status === 302) {
+                // Not authenticated or redirected
+                window.location.href = "/admin/admin-login.html";
+                return;
+            }
+
+            if (!contentType || !contentType.includes("application/json")) {
+                const text = await res.text();
+                throw new Error("Unexpected response: " + text.slice(0, 100));
+            }
+
+            const data = await res.json();
+            allDishes = data;
+            renderDishes(allDishes);
+
+        } catch (err) {
+            console.error("Error loading dishes:", err);
+            alert("Failed to load dishes: " + err.message);
+        }
+    }
+
+
+    function renderDishes(list) {
+        const container = document.getElementById("dishList");
+        const filtered = filterDishes(list);
+        const paginated = paginateDishes(filtered);
+
+        container.innerHTML = paginated.map(d => `
+            <div class="bg-zinc-800 p-4 rounded shadow-lg">
+                <div class="flex flex-col sm:flex-row gap-4">
+                    ${d.imageUrl ? `
+                        <img src="${d.imageUrl}" alt="${d.name}"
+                             class="w-full sm:w-24 h-24 object-cover rounded">` : ''}
+                    <div class="flex-1">
+                        <div class="flex justify-between">
+                            <h3 class="text-lg font-semibold">${d.name}</h3>
+                            <span class="text-orange-500">$${d.price.toFixed(2)}</span>
+                        </div>
+                        <p class="text-zinc-400 text-sm">${d.portion}</p>
+                        <p class="my-2">${d.description || "No description"}</p>
+                        <div class="flex flex-wrap gap-2 mt-3">
+                            <button class="text-yellow-400 hover:text-yellow-300 text-sm"
+                                onclick='openModal(${JSON.stringify(d)})'>
+                                Edit
+                            </button>
+                            <button class="text-red-500 hover:text-red-400 text-sm"
+                                onclick='deleteDish(${d.id})'>
+                                Delete
+                            </button>
+                            <button class="${d.isAvailable ?
+                'text-green-500 hover:text-green-400' :
+                'text-zinc-500 hover:text-zinc-400'} text-sm"
+                                onclick='toggleAvailability(${d.id}, ${!d.isAvailable})'>
+                                ${d.isAvailable ? 'Available' : 'Disabled'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+
+        updatePaginationControls(filtered.length);
+    }
+
+    function filterDishes(list) {
+        const term = document.getElementById("searchInput").value.toLowerCase();
+        return term ?
+            list.filter(d => d.name.toLowerCase().includes(term)) :
+            list;
+    }
+
+    function paginateDishes(list) {
+        const start = (currentPage - 1) * pageSize;
+        return list.slice(start, start + pageSize);
+    }
+
+    function updatePaginationControls(totalItems) {
+        const totalPages = Math.ceil(totalItems / pageSize);
+        document.getElementById("pageInfo").textContent = `Page ${currentPage} of ${totalPages}`;
+        document.getElementById("prevPage").disabled = currentPage <= 1;
+        document.getElementById("nextPage").disabled = currentPage >= totalPages;
+    }
+
+    function changePage(direction) {
+        const totalItems = filterDishes(allDishes).length;
+        const totalPages = Math.ceil(totalItems / pageSize);
+        const newPage = currentPage + direction;
+
+        if (newPage > 0 && newPage <= totalPages) {
+            currentPage = newPage;
+            renderDishes(allDishes);
+        }
+    }
+
+    function handleSearch() {
+        currentPage = 1;
+        renderDishes(allDishes);
+    }
+
+    async function deleteDish(id) {
+        if (!confirm("Permanently delete this dish?")) return;
+
+        try {
+            const res = await fetch(`/api/dishes/${id}`, {
+                method: "DELETE",
+                headers: { Authorization: "Bearer " + window.token }
+            });
+
+            if (res.ok) {
+                await loadDishes();
+            } else {
+                alert("Delete failed: " + res.status);
+            }
+        } catch (err) {
+            alert("Network error: " + err.message);
+        }
+    }
+
+    async function toggleAvailability(id, newStatus) {
+        try {
+            const res = await fetch(`/api/dishes/${id}/availability`, {
+                method: "PATCH",
+                headers: {
+                    Authorization: "Bearer " + window.token,
+                    "Content-Type": "application/json"
+                }
+            });
+
+            if (res.ok) {
+                const dish = allDishes.find(d => d.id === id);
+                if (dish) dish.isAvailable = newStatus;
+                renderDishes(allDishes);
+            } else {
+                alert("Toggle failed: " + res.status);
+            }
+        } catch (err) {
+            alert("Network error: " + err.message);
+        }
+    }
+
+    // Initialize
+    loadDishes();
+</script>
