@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <base href="/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LunchApp</title>
+
+    <!-- Local Bootstrap CSS -->
+    <link href="css/bootstrap.min.css" rel="stylesheet" />
+
+    <!-- Bootstrap Icons CSS -->
+    <link href="css/bootstrap-icons.css" rel="stylesheet" />
+
+    <style>
+        body {
+            background-color: #f8f9fa;
+            padding-top: 56px; /* space for navbar */
+        }
+
+        .container {
+            max-width: 960px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Clear any saved token before Blazor starts -->
+    <script>
+        localStorage.removeItem('authToken');
+    </script>
+
+    <div id="app">Loading...</div>
+    <script src="_framework/blazor.webassembly.js"></script>
+    <script src="js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
