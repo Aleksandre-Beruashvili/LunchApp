@@ -1,0 +1,50 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Order Confirmation</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script>
+    if (!localStorage.getItem('token')) location.href='login.html';
+    </script>
+</head>
+<body>
+    <div class="container mt-5 text-center">
+        <h2 class="mb-4">Your Order</h2>
+        <div id="details"></div>
+        <button id="cancelBtn" class="btn btn-danger mt-3">Cancel/Change</button>
+    </div>
+
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script>
+    async function loadConfirmation() {
+      const res = await fetch('/api/orders/latest', {
+        headers: { 'Authorization':'Bearer '+localStorage.getItem('token') }
+      });
+      const o = await res.json();
+      const d = document.getElementById('details');
+      d.innerHTML = `
+        <p><strong>Slot:</strong> ${o.slot}</p>
+        <p><strong>Items:</strong> ${
+          o.items.map(i=>`${i.dishName}×${i.quantity}`).join(', ')
+        }</p>
+        <img src="${o.qrCodeUrl}" alt="QR Code" class="img-fluid" style="max-width:200px">
+      `;
+      localStorage.setItem('orderId', o.id);
+    }
+
+    document.getElementById('cancelBtn').onclick = async ()=>{
+      const id = localStorage.getItem('orderId');
+      const res = await fetch(`/api/orders/${id}/cancel`, {
+        method:'PATCH',
+        headers:{ 'Authorization':'Bearer '+localStorage.getItem('token') }
+      });
+      if (res.ok) location.href='order.html';
+      else alert(await res.text());
+    };
+
+    loadConfirmation();
+    </script>
+</body>
+</html>

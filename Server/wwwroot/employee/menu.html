@@ -1,1 +1,55 @@
-<html><head><link rel='stylesheet' href='../styles.css'></head><body><h2>Menu</h2></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Today's Menu</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script>
+        // Redirect if already logged in
+        const token = localStorage.getItem('token');
+        if (!token) location.href = 'login.html';
+    </script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-4">Today's Dishes</h2>
+        <div class="row" id="menu"></div>
+    </div>
+
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function loadMenu() {
+            const res = await fetch('/api/menu/today', {
+                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+            });
+            const dishes = await res.json();
+            const row = document.getElementById('menu');
+            dishes.forEach(d => {
+                const col = document.createElement('div');
+                col.className = 'col-md-4';
+                col.innerHTML = `
+              <div class="card mb-4">
+                <img src="${d.imageUrl}" class="card-img-top" alt="${d.name}">
+                <div class="card-body">
+                  <h5>${d.name}</h5>
+                  <p>$${d.price.toFixed(2)}</p>
+                  ${d.isAvailable
+                        ? `<button class="btn btn-primary w-100" onclick="choose('${d.id}')">Order</button>`
+                        : `<span class="badge bg-danger">Sold Out</span>`}
+                </div>
+              </div>
+            `;
+                row.append(col);
+            });
+        }
+
+        function choose(id) {
+            localStorage.setItem('dishId', id);
+            location.href = 'order.html';
+        }
+
+        loadMenu();
+    </script>
+</body>
+</html>

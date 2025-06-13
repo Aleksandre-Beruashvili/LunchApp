@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Order Calendar</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-4">Order Calendar</h2>
+        <table class="table table-striped">
+            <thead><tr><th>Time Slot</th><th>Count</th></tr></thead>
+            <tbody id="slots"></tbody>
+        </table>
+    </div>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function loadCalendar() {
+            const t = localStorage.getItem('adminToken');
+            const today = new Date().toISOString().split('T')[0];
+            const res = await fetch(`/api/admin/orderCounts?date=${today}`, { headers: { 'Authorization': 'Bearer ' + t } });
+            (await res.json()).forEach(s => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${s.slot}</td><td>${s.count}</td>`;
+                document.getElementById('slots').append(tr);
+            });
+        }
+        loadCalendar();
+    </script>
+</body>
+</html>

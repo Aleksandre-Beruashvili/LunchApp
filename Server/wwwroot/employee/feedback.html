@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Leave Feedback</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script>if (!localStorage.getItem('token')) location.href = 'login.html';</script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-4">Rate Your Food</h2>
+        <form id="fbForm">
+            <div class="mb-3">
+                <label for="stars" class="form-label">Stars (1–5)</label>
+                <input id="stars" type="number" class="form-control" min="1" max="5" required>
+            </div>
+            <div class="mb-3">
+                <label for="comment" class="form-label">Comment</label>
+                <textarea id="comment" class="form-control" rows="3"></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Submit Feedback</button>
+        </form>
+    </div>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('fbForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            const res = await fetch('/api/rating', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                body: JSON.stringify({
+                    stars: +document.getElementById('stars').value,
+                    comment: document.getElementById('comment').value
+                })
+            });
+            if (res.ok) alert('Thanks!'), location.href = 'orders.html';
+            else alert(await res.text());
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>My Orders</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+    <script>
+        if (!localStorage.getItem('token')) location.href = 'login.html';
+    </script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-4">My Orders</h2>
+        <ul class="list-group" id="orders"></ul>
+    </div>
+
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script>
+        async function loadOrders() {
+            const res = await fetch('/api/orders', {
+                headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') }
+            });
+            const list = document.getElementById('orders');
+            (await res.json()).forEach(o => {
+                const li = document.createElement('li');
+                li.className = 'list-group-item';
+                const items = o.items.map(i => `${i.dishName}×${i.quantity}`).join(', ');
+                li.innerHTML = `
+              <div><strong>${o.slot}</strong> — ${items} <span class="badge bg-info">${o.status}</span></div>
+              <button class="btn btn-sm btn-success mt-2" onclick="reorder('${o.id}')">Reorder</button>
+            `;
+                list.append(li);
+            });
+        }
+
+        async function reorder(id) {
+            const orig = (await fetch('/api/orders', { headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') } }).then(r => r.json()))
+                .find(o => o.id === id);
+            const payload = {
+                slotId: orig.slotId,
+                items: orig.items.map(i => ({ dishId: i.dishId, quantity: i.quantity }))
+            };
+            const res = await fetch('/api/orders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                body: JSON.stringify(payload)
+            });
+            if (res.ok) alert('Reordered!');
+            else alert(await res.text());
+        }
+
+        loadOrders();
+    </script>
+</body>
+</html>

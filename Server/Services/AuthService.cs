@@ -30,8 +30,7 @@ namespace OfficeCafeApp.API.Services
 
         public async Task<User> Register(RegisterDto registerDto)
         {
-            byte[] passwordHash, passwordSalt;
-            CreatePasswordHash(registerDto.Password, out passwordHash, out passwordSalt);
+            CreatePasswordHash(registerDto.Password, out byte[] passwordHash, out byte[] passwordSalt);
 
             var user = new User
             {
@@ -98,7 +97,7 @@ namespace OfficeCafeApp.API.Services
             var tokenDescriptor = new SecurityTokenDescriptor
             {
                 Subject = new ClaimsIdentity(claims),
-                Expires = DateTime.UtcNow.AddDays(1),
+                Expires = DateTime.UtcNow.AddHours(1),
                 SigningCredentials = creds
             };
 

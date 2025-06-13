@@ -25,11 +25,11 @@ namespace OfficeCafeApp.API.Data
             if (!context.Users.Any(u => u.Role == "Manager"))
             {
                 byte[] passwordHash, passwordSalt;
-                CreatePasswordHash("admin123", out passwordHash, out passwordSalt);
+                CreatePasswordHash("AdminCR@123", out passwordHash, out passwordSalt);
 
                 context.Users.Add(new User
                 {
-                    Email = "admin@office.com",
+                    Email = "admin@credo.ge",
                     FullName = "Admin Manager",
                     PasswordHash = passwordHash,
                     PasswordSalt = passwordSalt,

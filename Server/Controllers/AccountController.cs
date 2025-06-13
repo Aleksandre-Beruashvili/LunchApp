@@ -6,7 +6,7 @@ using OfficeCafeApp.API.Services;
 namespace OfficeCafeApp.API.Controllers
 {
     [ApiController]
-    [Route("api/account")]
+    [Route("api/auth")]
     public class AccountController : ControllerBase
     {
         private readonly IAuthService _authService;

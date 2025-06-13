@@ -1,0 +1,40 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Pickup Reports</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="mb-4">Pickup Reports</h2>
+        <button class="btn btn-secondary mb-3" onclick="window.print()">Print</button>
+        <table class="table table-hover">
+            <thead>
+                <tr><th>User</th><th>Dish</th><th>Slot</th><th>QR</th></tr>
+            </thead>
+            <tbody id="report"></tbody>
+        </table>
+    </div>
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script>
+    async function loadReport(){
+      const t=localStorage.getItem('adminToken');
+      const today=new Date().toISOString().split('T')[0];
+      const res=await fetch(`/api/admin/orders?date=${today}`,{headers:{'Authorization':'Bearer '+t}});
+      (await res.json()).forEach(o=>{
+        const tr=document.createElement('tr');
+        tr.innerHTML=`
+          <td>${o.userName}</td>
+          <td>${o.items.map(i=>i.dishName).join(', ')}</td>
+          <td>${o.slot}</td>
+          <td><img src="${o.qrCodeUrl}" style="max-width:60px;"></td>
+        `;
+        document.getElementById('report').append(tr);
+      });
+    }
+    loadReport();
+    </script>
+</body>
+</html>

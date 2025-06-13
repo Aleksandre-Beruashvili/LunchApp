@@ -1,1 +1,71 @@
-<html><head><link rel='stylesheet' href='../styles.css'></head><body><h2>Admin Login</h2></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Login</title>
+    <link rel="stylesheet" href="/css/bootstrap.css">
+</head>
+<body>
+    <div class="container py-5">
+        <h1 class="text-center mb-4">Admin Login</h1>
+
+        <form id="loginForm" class="mx-auto" style="max-width: 400px;">
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input type="email" class="form-control" id="email" required />
+            </div>
+
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input type="password" class="form-control" id="password" required />
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">Login</button>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const form = document.getElementById("loginForm");
+
+            form.addEventListener("submit", async function (e) {
+                e.preventDefault();
+
+                const email = document.getElementById("email").value;
+                const password = document.getElementById("password").value;
+
+                try {
+                    const response = await fetch("/api/auth/login", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({ email, password })
+                    });
+
+                    if (!response.ok) {
+                        alert("Invalid login credentials.");
+                        return;
+                    }
+
+                    const data = await response.json();
+                    const token = data.token;
+
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    if (payload.role !== "Manager") {
+                        alert("Access denied. You must be a Manager.");
+                        return;
+                    }
+
+                    localStorage.setItem("token", token);
+                    window.location.href = "/admin/dashboard.html";
+                } catch (err) {
+                    console.error("Login error:", err);
+                    alert("Login failed. Please try again later.");
+                }
+            });
+        });
+    </script>
+</body>
+</html>

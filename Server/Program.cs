@@ -1,79 +1,112 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.StaticFiles;
-using Microsoft.EntityFrameworkCore;
+﻿using System.IO;
+using System.Collections.Generic;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Microsoft.EntityFrameworkCore;
 using OfficeCafeApp.API.Data;
 using OfficeCafeApp.API.Services;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+var config = builder.Configuration;
+var env = builder.Environment;
+var services = builder.Services;
 
-// 1) Db & DI
-builder.Services.AddDbContext<AppDbContext>(o =>
-    o.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IOrderService, OrderService>();
-builder.Services.AddScoped<IAdminService, AdminService>();
+// 1. Register Services
+// ---------------------
+services.AddDbContext<AppDbContext>(opts =>
+    opts.UseSqlServer(config.GetConnectionString("DefaultConnection")));
 
-// 2) JWT Auth
-builder.Services
-  .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-  .AddJwtBearer(opts =>
-  {
-      opts.TokenValidationParameters = new TokenValidationParameters
-      {
-          ValidateIssuerSigningKey = true,
-          IssuerSigningKey = new SymmetricSecurityKey(
-              Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"])),
-          ValidateIssuer = true,
-          ValidIssuer = builder.Configuration["Jwt:Issuer"],
-          ValidateAudience = true,
-          ValidAudience = builder.Configuration["Jwt:Audience"],
-          ValidateLifetime = true,
-          ClockSkew = TimeSpan.Zero
-      };
-  });
-builder.Services.AddAuthorization();
+services.AddScoped<IAuthService, AuthService>();
+services.AddScoped<IAdminService, AdminService>();
+services.AddScoped<IOrderService, OrderService>();
 
-// 3) Controllers & Swagger
-builder.Services.AddControllers();
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+services.AddCors(options => options.AddPolicy("AllowAll",
+    builder => builder.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod()));
+
+services.AddControllers();
+
+var jwtKey = config["Jwt:Key"];
+if (string.IsNullOrWhiteSpace(jwtKey))
+    throw new InvalidOperationException("JWT key is not configured.");
+
+var keyBytes = Encoding.UTF8.GetBytes(jwtKey);
+services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Events = new JwtBearerEvents
+        {
+            OnChallenge = context =>
+            {
+                context.HandleResponse(); // Stop default 401 response
+                context.Response.Redirect("/admin/admin-login.html"); // Redirect to login page
+                return Task.CompletedTask;
+            }
+        };
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = false,
+            ValidateAudience = false,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            IssuerSigningKey = new SymmetricSecurityKey(keyBytes)
+        };
+    });
+
+services.AddAuthorization();
 
 var app = builder.Build();
 
-// 4) Migrate & seed
-using (var scope = app.Services.CreateScope())
+// 2. Middleware Setup
+// ---------------------
+if (env.IsDevelopment())
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-    DbInitializer.Initialize(db);
+    app.UseDeveloperExceptionPage();
 }
-
-if (app.Environment.IsDevelopment())
+else
 {
-    app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseHsts();  // good practice in production
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();     // for wwwroot/
+app.UseDefaultFiles();    // for index.html under wwwroot/
 
-// 5) Serve login.html by default & static files
-var defaultFiles = new DefaultFilesOptions();
-defaultFiles.DefaultFileNames.Clear();
-defaultFiles.DefaultFileNames.Add("login.html");
-app.UseDefaultFiles(defaultFiles);
-app.UseStaticFiles();
+app.UseRouting();         // MUST be before auth for routing to work
 
-app.UseRouting();
-
+app.UseCors("AllowAll");
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 6) Map API controllers
+// 3. Admin UI static file serving
+// ---------------------
+var adminPath = Path.Combine(env.WebRootPath, "manager");
+if (Directory.Exists(adminPath))
+{
+    var adminFiles = new PhysicalFileProvider(adminPath);
+
+    app.UseStaticFiles(new StaticFileOptions
+    {
+        FileProvider = adminFiles,
+        RequestPath = "/admin"
+    });
+}
+else
+{
+    // Optional: Log warning if manager folder is missing
+    Console.WriteLine("Warning: 'wwwroot/manager' directory not found. Admin UI won't be served.");
+}
+
+// 4. API & Fallback Routes
+// ---------------------
 app.MapControllers();
 
-// 7) Fallback any unknown route to login.html
-app.MapFallbackToFile("login.html");
+// Fallback to employee login if path doesn't match anything
+app.MapFallbackToFile("employee/login.html");
 
 app.Run();

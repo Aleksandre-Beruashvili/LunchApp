@@ -1,21 +1,29 @@
 {
-    "iisSettings": {
-        "windowsAuthentication": false,
-        "anonymousAuthentication": true,
-        "iisExpress": {
-            "applicationUrl": "http://localhost:5002",
-            "sslPort": 5005
-        }
+  "profiles": {
+    "OfficeCafeApp.API": {
+      "commandName": "Project",
+      "launchBrowser": true,
+      "launchUrl": "admin",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      },
+      "applicationUrl": "https://localhost:5001;http://localhost:5000"
     },
-    "profiles": {
-        "OfficeCafeApp.API": {
-            "commandName": "Project",
-            "dotnetRunMessages": true,
-            "launchBrowser": true,
-            "applicationUrl": "https://localhost:5005;http://localhost:5002",
-            "environmentVariables": {
-                "ASPNETCORE_ENVIRONMENT": "Development"
-            }
-        }
+    "IIS Express": {
+      "commandName": "IISExpress",
+      "launchBrowser": true,
+      "launchUrl": "admin",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development"
+      }
     }
+  },
+  "iisSettings": {
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
+    "iisExpress": {
+      "applicationUrl": "http://localhost:4405/",
+      "sslPort": 44370
+    }
+  }
 }

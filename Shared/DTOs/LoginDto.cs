@@ -4,8 +4,7 @@ namespace LunchApp.Shared.DTOs
 {
     public class LoginDto
     {
-        [Required(ErrorMessage = "Email is required.")]
-        [EmailAddress(ErrorMessage = "Invalid email format.")]
+        [Required(ErrorMessage = "Email (or username) is required.")] 
         public string Email { get; set; }
 
         [Required(ErrorMessage = "Password is required.")]

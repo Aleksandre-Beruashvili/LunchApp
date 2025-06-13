@@ -8,7 +8,7 @@ namespace OfficeCafeApp.API.Controllers
 {
     [Authorize(Roles = "Manager")]
     [ApiController]
-    [Route("api/admin")] 
+    [Route("api/admin")]
     public class AdminController : ControllerBase
     {
         private readonly IAdminService _adminService;
@@ -23,6 +23,13 @@ namespace OfficeCafeApp.API.Controllers
         {
             var orders = await _adminService.GetOrdersByDateAsync(date);
             return Ok(orders);
+        }
+
+        [HttpGet("orders/counts")]
+        public async Task<IActionResult> GetOrderCountsByDate([FromQuery] DateTime date)
+        {
+            var result = await _adminService.GetOrderCountsByDateAsync(date);
+            return Ok(result);
         }
 
         [HttpPatch("dishes/{id}/availability")]

@@ -1,1 +1,65 @@
-<html><head><link rel='stylesheet' href='../styles.css'></head><body><h2>Employee Login</h2></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Employee Login</title>
+    <link rel="stylesheet" href="css/bootstrap.min.css" />
+    <script>
+        // If a valid token exists, skip login and go straight to menu.html
+        const token = localStorage.getItem('token');
+        if (token) {
+            try {
+                const { exp } = JSON.parse(atob(token.split('.')[1]));
+                if (exp * 1000 > Date.now()) {
+                    window.location.href = 'employee/menu.html';
+                } else {
+                    localStorage.removeItem('token');
+                }
+            } catch { /* malformed token? ignore */ }
+        }
+    </script>
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Employee Login</h2>
+        <form id="loginForm">
+            <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
+                <input id="email" type="email" class="form-control" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <input id="password" type="password" class="form-control" required>
+            </div>
+            <button type="submit" class="btn btn-primary w-100">Login</button>
+        </form>
+        <p class="mt-3 text-center">
+            Don’t have an account?
+            <a href="register.html">Register here</a>
+        </p>
+    </div>
+
+    <script src="js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', async e => {
+            e.preventDefault();
+            const res = await fetch('/api/account/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    email: document.getElementById('email').value,
+                    password: document.getElementById('password').value
+                })
+            });
+            if (!res.ok) {
+                const txt = await res.text();
+                return alert(`Login failed: ${txt}`);
+            }
+            const { token } = await res.json();
+            localStorage.setItem('token', token);
+            window.location.href = 'employee/menu.html';
+        });
+    </script>
+</body>
+</html>
