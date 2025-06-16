@@ -41,14 +41,18 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         {
             OnChallenge = context =>
             {
-                // Prevent default 401 response
                 context.HandleResponse();
 
-                // If frontend is requesting admin and is not authorized, redirect to login
-                if (!context.Response.HasStarted)
+                var path = context.Request.Path.Value ?? "";
+
+                if (path.StartsWith("/admin") && context.Request.Method == "GET")
                 {
                     context.Response.StatusCode = 302;
                     context.Response.Headers.Location = "/admin/admin-login.html";
+                }
+                else
+                {
+                    context.Response.StatusCode = 401;
                 }
 
                 return Task.CompletedTask;
@@ -124,8 +128,16 @@ app.UseAuthorization();
 // ----------------------------
 
 app.MapControllers();
-
-// fallback to login page if nothing matched (e.g., deep link to SPA)
 app.MapFallbackToFile("employee/login.html");
+
+// ----------------------------
+// 4. Seed Admin + Slots
+// ----------------------------
+
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    DbInitializer.Initialize(db);
+}
 
 app.Run();

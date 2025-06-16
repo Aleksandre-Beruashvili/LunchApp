@@ -7,7 +7,7 @@ using LunchApp.Shared.DTOs;
 
 namespace OfficeCafeApp.API.Controllers
 {
-    [Authorize(Roles = "Admin,Manager")]
+    [Authorize(Roles = "Admin")]
     [ApiController]
     [Route("api/[controller]")]
     public class DishesController : ControllerBase
@@ -24,7 +24,6 @@ namespace OfficeCafeApp.API.Controllers
             Directory.CreateDirectory(_uploadPath);
         }
 
-        // Get all dishes
         [HttpGet("all")]
         public async Task<IActionResult> GetAll()
         {
@@ -36,14 +35,14 @@ namespace OfficeCafeApp.API.Controllers
                     Description = d.Description,
                     Price = d.Price,
                     ImageUrl = d.ImageUrl,
-                    Portion = d.Portion
+                    Portion = d.Portion,
+                    Available = d.IsAvailable
                 })
                 .ToListAsync();
 
             return Ok(dishes);
         }
 
-        // Get today's available dishes
         [HttpGet("today")]
         public async Task<IActionResult> GetToday()
         {
@@ -61,7 +60,8 @@ namespace OfficeCafeApp.API.Controllers
                         Description = m.Dish.Description,
                         Price = m.Dish.Price,
                         ImageUrl = m.Dish.ImageUrl,
-                        Portion = m.Dish.Portion
+                        Portion = m.Dish.Portion,
+                        Available = m.Dish.IsAvailable
                     })
                     .ToListAsync();
 
@@ -73,15 +73,16 @@ namespace OfficeCafeApp.API.Controllers
             }
         }
 
-        // Add a new dish
         [HttpPost]
-        public async Task<IActionResult> AddDish([FromForm] DishUploadDto dto, IFormFile? image)
+        public async Task<IActionResult> AddDish([FromForm] DishUploadDto dto, [FromForm] IFormFile? image)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             try
             {
-                if (!new[] { "g", "ml", "pcs" }.Contains(dto.Portion))
-                    return BadRequest("Invalid portion type. Allowed values: g, ml, pcs");
-
                 string? imageUrl = null;
 
                 if (image != null)
@@ -108,7 +109,7 @@ namespace OfficeCafeApp.API.Controllers
                 _context.Dishes.Add(dish);
                 await _context.SaveChangesAsync();
 
-                return CreatedAtAction(nameof(GetAll), new { id = dish.Id });
+                return CreatedAtAction(nameof(GetAll), new { id = dish.Id }, dish);
             }
             catch
             {
@@ -116,17 +117,18 @@ namespace OfficeCafeApp.API.Controllers
             }
         }
 
-        // Update existing dish
         [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateDish(int id, [FromForm] DishUploadDto dto, IFormFile? image)
+        public async Task<IActionResult> UpdateDish(int id, [FromForm] DishUploadDto dto, [FromForm] IFormFile? image)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             try
             {
                 var dish = await _context.Dishes.FindAsync(id);
                 if (dish == null) return NotFound();
-
-                if (!new[] { "g", "ml", "pcs" }.Contains(dto.Portion))
-                    return BadRequest("Invalid portion type. Allowed values: g, ml, pcs");
 
                 if (image != null)
                 {
@@ -161,7 +163,6 @@ namespace OfficeCafeApp.API.Controllers
             }
         }
 
-        // Delete a dish
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteDish(int id)
         {
@@ -173,7 +174,6 @@ namespace OfficeCafeApp.API.Controllers
 
                 if (dish == null) return NotFound();
 
-                // Delete image if exists
                 if (!string.IsNullOrEmpty(dish.ImageUrl))
                 {
                     var filePath = Path.Combine(_env.WebRootPath, dish.ImageUrl.TrimStart('/'));
@@ -192,7 +192,6 @@ namespace OfficeCafeApp.API.Controllers
             }
         }
 
-        // Toggle dish availability
         [HttpPatch("{id}/availability")]
         public async Task<IActionResult> ToggleAvailability(int id)
         {

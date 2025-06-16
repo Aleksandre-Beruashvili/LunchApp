@@ -1,301 +1,503 @@
-﻿<div class="container mx-auto px-4 py-8">
-    <h2 class="text-2xl font-bold mb-6 flex flex-col sm:flex-row justify-between gap-4">
-        <button id="openModal" class="bg-orange-500 px-4 py-2 rounded text-sm w-full sm:w-auto">
-            + Add Dish
-        </button>
-        <input type="text" id="searchInput" placeholder="Search dishes..."
-               class="p-2 rounded bg-zinc-800 border border-zinc-700 text-white w-full sm:w-64" />
-    </h2>
+﻿<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Dish Management | Restaurant Admin</title>
 
-    <div id="dishList" class="grid grid-cols-1 gap-4"></div>
+    <!-- Tailwind & FontAwesome -->
+    <script src="https://cdn.tailwindcss.com" defer></script>
+    <link rel="stylesheet"
+          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
 
-    <div id="paginationControls" class="flex justify-center mt-6 space-x-4">
-        <button id="prevPage" class="bg-zinc-700 px-4 py-2 rounded disabled:opacity-50">Previous</button>
-        <span id="pageInfo" class="text-white font-semibold my-auto"></span>
-        <button id="nextPage" class="bg-zinc-700 px-4 py-2 rounded disabled:opacity-50">Next</button>
-    </div>
-</div>
-
-<!-- Dish Modal -->
-<div id="dishModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50 p-4">
-    <div class="bg-zinc-800 p-6 rounded w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <h3 class="text-xl font-semibold mb-4" id="modalTitle">Add Dish</h3>
-        <form id="dishForm" class="space-y-4">
-            <input type="hidden" id="dishId" />
-            <div>
-                <label class="block text-sm mb-1">Dish Name</label>
-                <input type="text" id="name" required
-                       class="w-full p-2 rounded bg-zinc-900 border border-zinc-700">
-            </div>
-            <div>
-                <label class="block text-sm mb-1">Portion Type</label>
-                <select id="portion" required
-                        class="w-full p-2 rounded bg-zinc-900 border border-zinc-700">
-                    <option value="">Select Portion</option>
-                    <option value="g">g</option>
-                    <option value="ml">ml</option>
-                    <option value="pcs">pcs</option>
-                </select>
-            </div>
-            <div>
-                <label class="block text-sm mb-1">Price</label>
-                <input type="number" id="price" step="0.01" min="0.01" required
-                       class="w-full p-2 rounded bg-zinc-900 border border-zinc-700">
-            </div>
-            <div>
-                <label class="block text-sm mb-1">Image</label>
-                <input type="file" id="imageFile" accept="image/*"
-                       class="w-full p-2 rounded bg-zinc-900 border border-zinc-700">
-                <div id="currentImage" class="mt-2 hidden"></div>
-            </div>
-            <div>
-                <label class="block text-sm mb-1">Description</label>
-                <textarea id="description"
-                          class="w-full p-2 rounded bg-zinc-900 border border-zinc-700 h-24"></textarea>
-            </div>
-            <div class="flex justify-end gap-2 pt-4">
-                <button type="button" id="closeModal" class="bg-zinc-700 px-4 py-2 rounded">Cancel</button>
-                <button type="submit" class="bg-orange-500 px-4 py-2 rounded">Save Dish</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<script>
-    let allDishes = [];
-    let currentPage = 1;
-    const pageSize = 5;
-    const modal = document.getElementById("dishModal");
-    const currentImageContainer = document.getElementById("currentImage");
-
-    // Event Listeners
-    document.getElementById("openModal").addEventListener("click", () => openModal());
-    document.getElementById("closeModal").addEventListener("click", () => closeModal());
-    document.getElementById("searchInput").addEventListener("input", handleSearch);
-    document.getElementById("prevPage").addEventListener("click", () => changePage(-1));
-    document.getElementById("nextPage").addEventListener("click", () => changePage(1));
-    document.getElementById('dishForm').addEventListener('submit', handleDishSubmit);
-    window.addEventListener("keydown", e => e.key === "Escape" && closeModal());
-
-    // Functions
-    function openModal(dish = null) {
-        document.getElementById("dishForm").reset();
-        currentImageContainer.classList.add("hidden");
-        currentImageContainer.innerHTML = "";
-
-        if (dish) {
-            document.getElementById("dishId").value = dish.id;
-            document.getElementById("name").value = dish.name;
-            document.getElementById("portion").value = dish.portion;
-            document.getElementById("price").value = dish.price;
-            document.getElementById("description").value = dish.description || "";
-            document.getElementById("modalTitle").textContent = "Edit Dish";
-
-            if (dish.imageUrl) {
-                currentImageContainer.classList.remove("hidden");
-                currentImageContainer.innerHTML = `
-                    <p class="text-sm mb-1">Current Image:</p>
-                    <img src="${dish.imageUrl}" alt="${dish.name}"
-                         class="w-24 h-24 object-cover rounded border border-zinc-700">
-                `;
-            }
-        } else {
-            document.getElementById("modalTitle").textContent = "Add Dish";
-        }
-
-        modal.classList.remove("hidden");
-    }
-
-    function closeModal() {
-        modal.classList.add("hidden");
-    }
-
-    async function handleDishSubmit(e) {
-        e.preventDefault();
-
-        const formData = new FormData();
-        formData.append("Name", document.getElementById("name").value);
-        formData.append("Portion", document.getElementById("portion").value);
-        formData.append("Price", parseFloat(document.getElementById("price").value));
-        formData.append("Description", document.getElementById("description").value);
-
-        const fileInput = document.getElementById("imageFile");
-        if (fileInput.files[0]) {
-            formData.append("Image", fileInput.files[0]);
-        }
-
-        const id = document.getElementById("dishId").value;
-        const url = id ? `/api/dishes/${id}` : `/api/dishes`;
-        const method = id ? "PUT" : "POST";
-
-        try {
-            const res = await fetch(url, {
-                method,
-                headers: { Authorization: "Bearer " + window.token },
-                body: formData
-            });
-
-            if (res.ok) {
-                closeModal();
-                await loadDishes();
-            } else {
-                const error = await res.text();
-                alert(`Error: ${res.status} - ${error}`);
-            }
-        } catch (err) {
-            alert("Network error: " + err.message);
-        }
-    }
-    async function loadDishes() {
-        try {
-            const res = await fetch("/api/dishes/all", {
-                headers: {
-                    Authorization: "Bearer " + localStorage.getItem("token")
+    <!-- Custom palette -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ea580c',
+                        dark: '#18181b',
+                        dark2: '#27272a',
+                        dark3: '#3f3f46'
+                    }
                 }
-            });
-
-            const contentType = res.headers.get("Content-Type");
-
-            if (res.status === 401 || res.status === 302) {
-                // Not authenticated or redirected
-                window.location.href = "/admin/admin-login.html";
-                return;
             }
+        };
+    </script>
 
-            if (!contentType || !contentType.includes("application/json")) {
-                const text = await res.text();
-                throw new Error("Unexpected response: " + text.slice(0, 100));
-            }
-
-            const data = await res.json();
-            allDishes = data;
-            renderDishes(allDishes);
-
-        } catch (err) {
-            console.error("Error loading dishes:", err);
-            alert("Failed to load dishes: " + err.message);
+    <style>
+        body {
+            background: linear-gradient(135deg,#0f172a 0%,#1e293b 100%)
         }
-    }
 
+        .dish-card {
+            transition: transform .3s,box-shadow .3s
+        }
 
-    function renderDishes(list) {
-        const container = document.getElementById("dishList");
-        const filtered = filterDishes(list);
-        const paginated = paginateDishes(filtered);
+            .dish-card:hover {
+                transform: translateY(-4px);
+                box-shadow: 0 8px 18px rgba(0,0,0,.25)
+            }
 
-        container.innerHTML = paginated.map(d => `
-            <div class="bg-zinc-800 p-4 rounded shadow-lg">
-                <div class="flex flex-col sm:flex-row gap-4">
-                    ${d.imageUrl ? `
-                        <img src="${d.imageUrl}" alt="${d.name}"
-                             class="w-full sm:w-24 h-24 object-cover rounded">` : ''}
-                    <div class="flex-1">
-                        <div class="flex justify-between">
-                            <h3 class="text-lg font-semibold">${d.name}</h3>
-                            <span class="text-orange-500">$${d.price.toFixed(2)}</span>
-                        </div>
-                        <p class="text-zinc-400 text-sm">${d.portion}</p>
-                        <p class="my-2">${d.description || "No description"}</p>
-                        <div class="flex flex-wrap gap-2 mt-3">
-                            <button class="text-yellow-400 hover:text-yellow-300 text-sm"
-                                onclick='openModal(${JSON.stringify(d)})'>
-                                Edit
-                            </button>
-                            <button class="text-red-500 hover:text-red-400 text-sm"
-                                onclick='deleteDish(${d.id})'>
-                                Delete
-                            </button>
-                            <button class="${d.isAvailable ?
-                'text-green-500 hover:text-green-400' :
-                'text-zinc-500 hover:text-zinc-400'} text-sm"
-                                onclick='toggleAvailability(${d.id}, ${!d.isAvailable})'>
-                                ${d.isAvailable ? 'Available' : 'Disabled'}
+        .modal {
+            transition: opacity .25s,visibility .25s
+        }
+
+            .modal[aria-hidden="true"] {
+                opacity: 0;
+                visibility: hidden
+            }
+
+            .modal[aria-hidden="false"] {
+                opacity: 1;
+                visibility: visible
+            }
+
+        .modal-content {
+            transform: scale(.95);
+            transition: transform .25s
+        }
+
+        .modal[aria-hidden="false"] .modal-content {
+            transform: scale(1)
+        }
+
+        .status-badge {
+            padding: .25rem .75rem;
+            border-radius: 9999px;
+            font-size: .75rem;
+            font-weight: 600
+        }
+
+        .status-available {
+            background: rgba(34,197,94,.1);
+            color: #22c55e
+        }
+
+        .status-disabled {
+            background: rgba(239,68,68,.1);
+            color: #ef4444
+        }
+
+        .skeleton {
+            animation: pulse 2s cubic-bezier(.4,0,.6,1) infinite;
+            background: #27272a;
+            border-radius: .5rem
+        }
+
+        @keyframes pulse {
+            0%,100% {
+                opacity: 1
+            }
+
+            50% {
+                opacity: .5
+            }
+        }
+
+        .select-wrapper {
+            position: relative
+        }
+
+            .select-wrapper::after {
+                content: "\f078";
+                font-family: "Font Awesome 6 Free";
+                font-weight: 900;
+                position: absolute;
+                right: 1rem;
+                top: 50%;
+                transform: translateY(-50%);
+                pointer-events: none;
+                color: #fff
+            }
+
+        button:disabled {
+            cursor: not-allowed;
+            opacity: .5
+        }
+    </style>
+</head>
+
+<body class="min-h-full text-white flex flex-col">
+    <main class="flex-grow">
+        <!-- Header -->
+        <header class="text-center py-10">
+            <h1 class="text-4xl font-bold bg-gradient-to-r from-orange-500 to-yellow-500 bg-clip-text text-transparent">
+                Dish Management
+            </h1>
+            <p class="text-zinc-400 max-w-2xl mx-auto mt-2">
+                Add, edit, or disable menu items in seconds.
+            </p>
+        </header>
+
+        <!-- Controls -->
+        <section class="container mx-auto px-4 max-w-6xl">
+            <div class="flex flex-col sm:flex-row justify-between gap-4 mb-8 p-4 bg-dark2 rounded-xl shadow-lg">
+                <button id="openModal"
+                        class="bg-primary px-6 py-3 rounded-lg font-medium hover:bg-orange-600 flex items-center gap-2">
+                    <i class="fas fa-plus"></i> Add New Dish
+                </button>
+
+                <label class="relative w-full sm:w-80">
+                    <input id="searchInput" type="search" placeholder="Search dishes..."
+                           class="w-full p-3 pl-10 rounded-lg bg-dark3 border border-zinc-700 placeholder-zinc-400
+                 focus:outline-none focus:ring-2 focus:ring-primary" />
+                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"></i>
+                </label>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10">
+                <article class="bg-gradient-to-br from-blue-900 to-blue-700 p-5 rounded-xl shadow-lg flex justify-between items-center">
+                    <div><p class="text-zinc-300">Total Dishes</p><p id="totalDishes" class="text-3xl font-bold mt-1">0</p></div>
+                    <i class="fas fa-utensils text-3xl text-blue-300"></i>
+                </article>
+                <article class="bg-gradient-to-br from-green-900 to-green-700 p-5 rounded-xl shadow-lg flex justify-between items-center">
+                    <div><p class="text-zinc-300">Available Today</p><p id="availableDishes" class="text-3xl font-bold mt-1">0</p></div>
+                    <i class="fas fa-check-circle text-3xl text-green-300"></i>
+                </article>
+                <article class="bg-gradient-to-br from-purple-900 to-purple-700 p-5 rounded-xl shadow-lg flex justify-between items-center">
+                    <div><p class="text-zinc-300">Most Popular</p><p id="popularDish" class="text-xl font-bold mt-1">–</p></div>
+                    <i class="fas fa-fire text-3xl text-purple-300"></i>
+                </article>
+            </div>
+
+            <!-- Dish list -->
+            <div id="dishList" class="grid grid-cols-1 gap-6 mb-10">
+                <div class="skeleton h-40"></div><div class="skeleton h-40"></div><div class="skeleton h-40"></div>
+            </div>
+
+            <!-- Pagination -->
+            <nav id="paginationControls" class="flex justify-center gap-4 mb-16" aria-label="pagination">
+                <button id="prevPage" class="bg-dark2 px-5 py-2 rounded-lg hover:bg-dark3 flex items-center">
+                    <i class="fas fa-chevron-left mr-2"></i> Prev
+                </button>
+                <span id="pageInfo" class="font-semibold px-4 py-2 bg-dark3 rounded-lg">Page 1 of 1</span>
+                <button id="nextPage" class="bg-dark2 px-5 py-2 rounded-lg hover:bg-dark3 flex items-center">
+                    Next <i class="fas fa-chevron-right ml-2"></i>
+                </button>
+            </nav>
+        </section>
+    </main>
+
+    <!-- Dish Modal -->
+    <div id="dishModal"
+         class="modal fixed inset-0 bg-black/70 flex items-center justify-center p-4 z-50"
+         aria-hidden="true" aria-labelledby="modalTitle" role="dialog">
+        <div class="modal-content bg-dark2 p-6 rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+            <header class="flex justify-between items-center mb-4">
+                <h2 id="modalTitle" class="text-xl font-semibold">Add Dish</h2>
+                <button id="closeModal" class="text-zinc-400 hover:text-white" aria-label="Close modal">
+                    <i class="fas fa-times text-2xl"></i>
+                </button>
+            </header>
+
+            <form id="dishForm" class="space-y-4" enctype="multipart/form-data">
+                <input type="hidden" id="dishId" name="dishId" />
+
+                <!-- Name + Portion -->
+                <div class="grid sm:grid-cols-2 gap-4">
+                    <div>
+                        <label for="name" class="block text-sm mb-1">Dish Name *</label>
+                        <input id="name" name="Name" type="text" required
+                               class="w-full p-3 rounded-lg bg-dark3 border border-zinc-700 placeholder-zinc-400
+                        focus:outline-none focus:ring-2 focus:ring-primary" />
+                        <p id="nameError" class="hidden text-red-400 text-xs mt-1">Name required.</p>
+                    </div>
+
+                    <div class="select-wrapper">
+                        <label for="portion" class="block text-sm mb-1">Portion *</label>
+                        <select id="portion" name="Portion" required
+                                class="appearance-none w-full p-3 rounded-lg bg-dark3 border border-zinc-700
+                         focus:outline-none focus:ring-2 focus:ring-primary">
+                            <option value="" disabled selected>Choose portion</option>
+                            <option value="g">Grams</option>
+                            <option value="ml">Milliliters</option>
+                            <option value="pcs">Pieces</option>
+                        </select>
+                        <p id="portionError" class="hidden text-red-400 text-xs mt-1">Select a portion type.</p>
+                    </div>
+                </div>
+
+                <!-- Price -->
+                <div>
+                    <label for="price" class="block text-sm mb-1">Price *</label>
+                    <div class="relative">
+                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">$</span>
+                        <input id="price" name="Price" type="number" step=".01" min=".01" required
+                               class="w-full pl-8 p-3 rounded-lg bg-dark3 border border-zinc-700 placeholder-zinc-400
+                        focus:outline-none focus:ring-2 focus:ring-primary" />
+                    </div>
+                    <p id="priceError" class="hidden text-red-400 text-xs mt-1">Enter a valid price.</p>
+                </div>
+
+                <!-- Description -->
+                <div>
+                    <label for="description" class="block text-sm mb-1">Description</label>
+                    <textarea id="description" name="Description" rows="3"
+                              class="w-full p-3 rounded-lg bg-dark3 border border-zinc-700 placeholder-zinc-400
+                         focus:outline-none focus:ring-2 focus:ring-primary"></textarea>
+                </div>
+
+                <!-- Image -->
+                <div>
+                    <label class="block text-sm mb-1">Image</label>
+                    <div class="flex items-center gap-4">
+                        <label for="imageFile"
+                               class="flex flex-col items-center justify-center w-32 h-32 border-2 border-dashed border-zinc-700
+                        rounded-lg cursor-pointer bg-dark3 hover:bg-dark">
+                            <i class="fas fa-cloud-upload-alt text-3xl text-zinc-500 mb-2"></i>
+                            <span class="text-xs text-zinc-400">Upload</span>
+                        </label>
+                        <input id="imageFile" name="image" type="file" accept="image/*" class="hidden" />
+                        <div id="currentImage" class="hidden flex-col items-center">
+                            <span class="text-xs mb-1">Current:</span>
+                            <img alt="" class="w-24 h-24 object-cover rounded-lg border border-zinc-700" />
+                            <button type="button" id="removeImage"
+                                    class="mt-2 text-red-500 text-xs hover:text-red-400">
+                                <i class="fas fa-trash mr-1"></i> Remove
                             </button>
                         </div>
                     </div>
                 </div>
-            </div>
-        `).join('');
 
-        updatePaginationControls(filtered.length);
-    }
+                <p id="formError" class="hidden bg-red-900 text-red-200 p-2 rounded-lg text-sm"></p>
 
-    function filterDishes(list) {
-        const term = document.getElementById("searchInput").value.toLowerCase();
-        return term ?
-            list.filter(d => d.name.toLowerCase().includes(term)) :
-            list;
-    }
+                <!-- Actions -->
+                <footer class="flex justify-end gap-3 pt-4 border-t border-zinc-800">
+                    <button type="button" id="closeModalBtn"
+                            class="bg-zinc-700 px-6 py-2 rounded-lg hover:bg-zinc-600">
+                        Cancel
+                    </button>
+                    <button type="submit"
+                            class="bg-primary px-6 py-2 rounded-lg hover:bg-orange-600 flex items-center gap-2">
+                        <i class="fas fa-save"></i> Save
+                    </button>
+                </footer>
+            </form>
+        </div>
+    </div>
 
-    function paginateDishes(list) {
-        const start = (currentPage - 1) * pageSize;
-        return list.slice(start, start + pageSize);
-    }
+    <!-- Main Script -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
 
-    function updatePaginationControls(totalItems) {
-        const totalPages = Math.ceil(totalItems / pageSize);
-        document.getElementById("pageInfo").textContent = `Page ${currentPage} of ${totalPages}`;
-        document.getElementById("prevPage").disabled = currentPage <= 1;
-        document.getElementById("nextPage").disabled = currentPage >= totalPages;
-    }
+            /* ---------- Quick helpers ---------- */
+            const $ = id => document.getElementById(id);
+            const $$ = (sel, el = document) => Array.from(el.querySelectorAll(sel));
+            const debounce = (fn, ms = 300) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn.apply(this, a), ms); }; };
 
-    function changePage(direction) {
-        const totalItems = filterDishes(allDishes).length;
-        const totalPages = Math.ceil(totalItems / pageSize);
-        const newPage = currentPage + direction;
+            /* ---------- State ---------- */
+            const state = { list: [], page: 1, size: 5, busy: false };
 
-        if (newPage > 0 && newPage <= totalPages) {
-            currentPage = newPage;
-            renderDishes(allDishes);
-        }
-    }
+            /* ---------- Element cache ---------- */
+            const els = {
+                modal: $('dishModal'),
+                form: $('dishForm'),
+                openBtn: $('openModal'),
+                closeX: $('closeModal'),
+                closeFooter: $('closeModalBtn'),
+                nameErr: $('nameError'),
+                portionErr: $('portionError'),
+                priceErr: $('priceError'),
+                formErr: $('formError'),
+                listWrap: $('dishList'),
+                pageInfo: $('pageInfo'),
+                prev: $('prevPage'),
+                next: $('nextPage'),
+                search: $('searchInput'),
+                file: $('imageFile'),
+                imgWrap: $('currentImage'),
+                removeImg: $('removeImage'),
+                stats: {
+                    total: $('totalDishes'),
+                    avail: $('availableDishes'),
+                    top: $('popularDish')
+                }
+            };
 
-    function handleSearch() {
-        currentPage = 1;
-        renderDishes(allDishes);
-    }
+            /* ---------- API helper ---------- */
+            const api = (url, opt = {}) => {
+                const token = localStorage.getItem('token');
+                return fetch(url, { ...opt, headers: { ...opt.headers, Authorization: `Bearer ${token}` } })
+                    .then(async r => r.ok ? r.json() : Promise.reject(await r.json().catch(() => ({ status: r.status }))));
+            };
 
-    async function deleteDish(id) {
-        if (!confirm("Permanently delete this dish?")) return;
+            /* ---------- Initial load ---------- */
+            load();
 
-        try {
-            const res = await fetch(`/api/dishes/${id}`, {
-                method: "DELETE",
-                headers: { Authorization: "Bearer " + window.token }
+            /* ---------- Event bindings ---------- */
+            els.openBtn.addEventListener('click', () => openModal());
+            [els.closeX, els.closeFooter].forEach(b => b.addEventListener('click', closeModal));
+            window.addEventListener('keydown', e => e.key === 'Escape' && closeModal());
+
+            els.prev.addEventListener('click', () => { state.page--; render(); });
+            els.next.addEventListener('click', () => { state.page++; render(); });
+            els.search.addEventListener('input', debounce(() => { state.page = 1; render(); }));
+
+            els.file.addEventListener('change', e => {
+                if (e.target.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = ev => {
+                        els.imgWrap.querySelector('img').src = ev.target.result;
+                        els.imgWrap.classList.remove('hidden');
+                    };
+                    reader.readAsDataURL(e.target.files[0]);
+                }
             });
+            els.removeImg.addEventListener('click', () => { els.file.value = ''; els.imgWrap.classList.add('hidden'); });
 
-            if (res.ok) {
-                await loadDishes();
-            } else {
-                alert("Delete failed: " + res.status);
-            }
-        } catch (err) {
-            alert("Network error: " + err.message);
-        }
-    }
+            els.form.addEventListener('submit', async e => {
+                e.preventDefault();
+                if (state.busy) return;
+                clearErrors();
+                if (!validate()) return;
 
-    async function toggleAvailability(id, newStatus) {
-        try {
-            const res = await fetch(`/api/dishes/${id}/availability`, {
-                method: "PATCH",
-                headers: {
-                    Authorization: "Bearer " + window.token,
-                    "Content-Type": "application/json"
+                const btn = els.form.querySelector('button[type="submit"]');
+                const old = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Saving…';
+                btn.disabled = true; state.busy = true;
+
+                try {
+                    const id = $('dishId').value || null;
+                    await save(new FormData(els.form), id);
+                    closeModal();
+                    await load();
+                } catch {
+                    els.formErr.textContent = 'Save failed. Try again.'; els.formErr.classList.remove('hidden');
+                } finally {
+                    btn.innerHTML = old; btn.disabled = false; state.busy = false;
                 }
             });
 
-            if (res.ok) {
-                const dish = allDishes.find(d => d.id === id);
-                if (dish) dish.isAvailable = newStatus;
-                renderDishes(allDishes);
-            } else {
-                alert("Toggle failed: " + res.status);
-            }
-        } catch (err) {
-            alert("Network error: " + err.message);
-        }
-    }
+            els.listWrap.addEventListener('click', async e => {
+                const btn = e.target.closest('button[data-act]');
+                if (!btn) return;
+                const id = btn.dataset.id;
+                const dish = state.list.find(d => d.id == id);
+                if (!dish) return;
 
-    // Initialize
-    loadDishes();
-</script>
+                if (btn.dataset.act === 'edit') {
+                    openModal(dish);
+                } else if (btn.dataset.act === 'del') {
+                    if (!confirm(`Delete "${dish.name}"?`)) return;
+                    try { await api(`/api/dishes/${id}`, { method: 'DELETE' }); state.list = state.list.filter(d => d.id != id); render(); }
+                    catch { alert('Delete failed.'); }
+                } else if (btn.dataset.act === 'toggle') {
+                    try { await api(`/api/dishes/${id}/availability`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isAvailable: !dish.isAvailable }) }); dish.isAvailable = !dish.isAvailable; render(); }
+                    catch { alert('Status update failed.'); }
+                }
+            });
+
+            /* ---------- Functions ---------- */
+            async function load() {
+                skeleton(true);
+                try { state.list = await api('/api/dishes/all'); render(); }
+                catch { alert('Failed to load dishes.'); }
+                finally { skeleton(false); }
+            }
+
+            async function save(formData, id) {
+                const method = id ? 'PUT' : 'POST';
+                const url = id ? `/api/dishes/${id}` : '/api/dishes';
+                await api(url, { method, body: formData });
+            }
+
+            function render() {
+                const query = els.search.value.trim().toLowerCase();
+                const filtered = query ? state.list.filter(d => d.name.toLowerCase().includes(query)) : state.list;
+                const pages = Math.max(1, Math.ceil(filtered.length / state.size));
+                state.page = Math.min(state.page, pages);
+
+                const slice = filtered.slice((state.page - 1) * state.size, state.page * state.size);
+                els.listWrap.innerHTML = slice.map(card).join('');
+
+                els.pageInfo.textContent = `Page ${state.page} of ${pages}`;
+                els.prev.disabled = state.page === 1;
+                els.next.disabled = state.page === pages;
+
+                els.stats.total.textContent = state.list.length;
+                els.stats.avail.textContent = state.list.filter(d => d.isAvailable).length;
+                els.stats.top.textContent = state.list.length ? state.list.reduce((p, c) => (p.orderCount || 0) > (c.orderCount || 0) ? p : c).name : '–';
+            }
+
+            const card = d => `
+        <article class="dish-card bg-dark2 p-5 rounded-xl shadow-lg flex flex-col sm:flex-row gap-5">
+          ${d.imageUrl
+                    ? `<img src="${d.imageUrl}" alt="${d.name}" class="w-full sm:w-32 h-32 object-cover rounded-lg border border-zinc-700">`
+                    : `<div class="flex-shrink-0 w-32 h-32 bg-dark3 rounded-lg flex items-center justify-center">
+                 <i class="fas fa-utensils text-3xl text-zinc-600"></i>
+               </div>`}
+          <div class="flex-1">
+            <header class="flex justify-between items-start mb-1">
+              <h3 class="text-xl font-bold">${d.name}</h3>
+              <span class="text-orange-500 font-bold">$${d.price.toFixed(2)}</span>
+            </header>
+            <div class="flex flex-wrap items-center gap-3 text-sm mb-2">
+              <span class="status-badge ${d.isAvailable ? 'status-available' : 'status-disabled'}">
+                <i class="fas fa-${d.isAvailable ? 'check' : 'times'} mr-1 text-xs"></i>
+                ${d.isAvailable ? 'Available' : 'Disabled'}
+              </span>
+              <span class="text-zinc-400"><i class="fas fa-weight-hanging mr-1 text-xs"></i>Portion: ${d.portion}</span>
+            </div>
+            <p class="text-zinc-300 mb-4">${d.description || 'No description.'}</p>
+            <div class="flex flex-wrap gap-3 text-sm">
+              <button data-act="edit" data-id="${d.id}"
+                      class="bg-blue-700 hover:bg-blue-600 px-4 py-2 rounded-lg"><i class="fas fa-edit mr-1"></i>Edit</button>
+              <button data-act="del"  data-id="${d.id}"
+                      class="bg-red-700 hover:bg-red-600 px-4 py-2 rounded-lg"><i class="fas fa-trash mr-1"></i>Delete</button>
+              <button data-act="toggle" data-id="${d.id}"
+                      class="${d.isAvailable ? 'bg-zinc-700 hover:bg-zinc-600' : 'bg-green-700 hover:bg-green-600'} px-4 py-2 rounded-lg">
+                <i class="fas fa-${d.isAvailable ? 'ban' : 'check'} mr-1"></i>${d.isAvailable ? 'Disable' : 'Enable'}
+              </button>
+            </div>
+          </div>
+        </article>`;
+
+            function openModal(d = null) {
+                els.form.reset(); $('dishId').value = '';
+                els.imgWrap.classList.add('hidden'); els.file.value = '';
+                els.modal.querySelector('#modalTitle').textContent = d ? 'Edit Dish' : 'Add Dish';
+
+                if (d) {
+                    $('dishId').value = d.id;
+                    $('name').value = d.name;
+                    $('portion').value = d.portion;
+                    $('price').value = d.price;
+                    $('description').value = d.description || '';
+                    if (d.imageUrl) {
+                        els.imgWrap.querySelector('img').src = d.imageUrl;
+                        els.imgWrap.classList.remove('hidden');
+                    }
+                }
+
+                els.modal.setAttribute('aria-hidden', 'false');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeModal() {
+                els.modal.setAttribute('aria-hidden', 'true');
+                document.body.style.overflow = '';
+            }
+
+            function validate() {
+                let ok = true;
+                if (!$('name').value.trim()) { els.nameErr.classList.remove('hidden'); ok = false; }
+                if (!$('portion').value) { els.portionErr.classList.remove('hidden'); ok = false; }
+                if (!(+$('price').value > 0)) { els.priceErr.classList.remove('hidden'); ok = false; }
+                if (!ok) { els.formErr.textContent = 'Fix highlighted fields.'; els.formErr.classList.remove('hidden'); }
+                return ok;
+            }
+
+            function clearErrors() {
+                [els.nameErr, els.portionErr, els.priceErr, els.formErr].forEach(el => el.classList.add('hidden'));
+            }
+
+            function skeleton(on) {
+                els.listWrap.innerHTML = on ? '<div class="skeleton h-40"></div>'.repeat(3) : '';
+            }
+        });
+    </script>
+</body>
+</html>

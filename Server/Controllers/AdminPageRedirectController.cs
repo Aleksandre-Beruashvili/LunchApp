@@ -8,7 +8,7 @@ namespace OfficeCafeApp.API.Controllers
     public class AdminPageRedirectController : Controller
     {
         [HttpGet]
-        [Authorize(Roles = "Manager")]
+        [Authorize(Roles = "Admin,Manager")]
         public IActionResult RedirectToDashboard()
         {
             return Redirect("/admin/dashboard.html");

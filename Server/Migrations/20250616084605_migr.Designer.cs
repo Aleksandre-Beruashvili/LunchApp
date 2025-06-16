@@ -12,8 +12,8 @@ using OfficeCafeApp.API.Data;
 namespace OfficeCafeApp.API.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20250612081020_InitAuth")]
-    partial class InitAuth
+    [Migration("20250616084605_migr")]
+    partial class migr
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -35,12 +35,10 @@ namespace OfficeCafeApp.API.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Description")
-                        .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("ImageUrl")
-                        .IsRequired()
                         .HasMaxLength(255)
                         .HasColumnType("nvarchar(255)");
 
@@ -52,13 +50,12 @@ namespace OfficeCafeApp.API.Migrations
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
+                    b.Property<string>("Portion")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<decimal>("Price")
                         .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("ScheduleDays")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
 
@@ -179,6 +176,9 @@ namespace OfficeCafeApp.API.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("CurrentCount")
+                        .HasColumnType("int");
+
                     b.Property<TimeSpan>("EndTime")
                         .HasColumnType("time");
 
@@ -228,7 +228,7 @@ namespace OfficeCafeApp.API.Migrations
             modelBuilder.Entity("OfficeCafeApp.API.Models.MenuSchedule", b =>
                 {
                     b.HasOne("OfficeCafeApp.API.Models.Dish", "Dish")
-                        .WithMany()
+                        .WithMany("MenuSchedules")
                         .HasForeignKey("DishId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -258,7 +258,7 @@ namespace OfficeCafeApp.API.Migrations
             modelBuilder.Entity("OfficeCafeApp.API.Models.OrderItem", b =>
                 {
                     b.HasOne("OfficeCafeApp.API.Models.Dish", "Dish")
-                        .WithMany()
+                        .WithMany("OrderItems")
                         .HasForeignKey("DishId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -291,6 +291,13 @@ namespace OfficeCafeApp.API.Migrations
                     b.Navigation("Dish");
 
                     b.Navigation("User");
+                });
+
+            modelBuilder.Entity("OfficeCafeApp.API.Models.Dish", b =>
+                {
+                    b.Navigation("MenuSchedules");
+
+                    b.Navigation("OrderItems");
                 });
 
             modelBuilder.Entity("OfficeCafeApp.API.Models.Order", b =>

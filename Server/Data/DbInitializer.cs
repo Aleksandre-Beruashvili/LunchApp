@@ -1,7 +1,8 @@
-﻿using OfficeCafeApp.API.Models;
-using System;
+﻿using System;
 using System.Linq;
 using System.Security.Cryptography;
+using Microsoft.EntityFrameworkCore;
+using OfficeCafeApp.API.Models;
 
 namespace OfficeCafeApp.API.Data
 {
@@ -9,23 +10,24 @@ namespace OfficeCafeApp.API.Data
     {
         public static void Initialize(AppDbContext context)
         {
-            context.Database.EnsureCreated();
 
+            context.Database.Migrate();
+
+            // Seed slots if none exist
             if (!context.Slots.Any())
             {
                 var slots = new[]
                 {
                     new Slot { StartTime = new TimeSpan(11, 0, 0), EndTime = new TimeSpan(11, 15, 0) },
-                    new Slot { StartTime = new TimeSpan(11, 15, 0), EndTime = new TimeSpan(11, 30, 0) },
-                    // Add more slots...
+                    new Slot { StartTime = new TimeSpan(11, 15, 0), EndTime = new TimeSpan(11, 30, 0) }
                 };
                 context.Slots.AddRange(slots);
             }
 
-            if (!context.Users.Any(u => u.Role == "Manager"))
+            // Seed admin user if not exists
+            if (!context.Users.Any(u => u.Role == "Admin"))
             {
-                byte[] passwordHash, passwordSalt;
-                CreatePasswordHash("AdminCR@123", out passwordHash, out passwordSalt);
+                CreatePasswordHash("AdminCR@123", out byte[] passwordHash, out byte[] passwordSalt);
 
                 context.Users.Add(new User
                 {
@@ -33,7 +35,7 @@ namespace OfficeCafeApp.API.Data
                     FullName = "Admin Manager",
                     PasswordHash = passwordHash,
                     PasswordSalt = passwordSalt,
-                    Role = "Manager"
+                    Role = "Admin"
                 });
             }
 
@@ -42,11 +44,9 @@ namespace OfficeCafeApp.API.Data
 
         private static void CreatePasswordHash(string password, out byte[] passwordHash, out byte[] passwordSalt)
         {
-            using (var hmac = new HMACSHA512())
-            {
-                passwordSalt = hmac.Key;
-                passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
-            }
+            using var hmac = new HMACSHA512();
+            passwordSalt = hmac.Key;
+            passwordHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
         }
     }
 }

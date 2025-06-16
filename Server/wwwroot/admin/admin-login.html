@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Admin Login</title>
-    <link rel="stylesheet" href="/css/bootstrap.css">
+    <link rel="stylesheet" href="/css/bootstrap.css" />
 </head>
 <body>
     <div class="container py-5">
@@ -53,8 +53,8 @@
                     const token = data.token;
 
                     const payload = JSON.parse(atob(token.split('.')[1]));
-                    if (payload.role !== "Manager") {
-                        alert("Access denied. You must be a Manager.");
+                    if (payload.role !== "Admin") {
+                        alert("Access denied. You must be an Admin.");
                         return;
                     }
 

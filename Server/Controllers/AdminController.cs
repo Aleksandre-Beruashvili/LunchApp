@@ -6,7 +6,7 @@ using OfficeCafeApp.API.Services;
 
 namespace OfficeCafeApp.API.Controllers
 {
-    [Authorize(Roles = "Manager")]
+    [Authorize(Roles = "Admin,Manager")]
     [ApiController]
     [Route("api/admin")]
     public class AdminController : ControllerBase
