@@ -94,7 +94,7 @@ const DishManager = (() => {
       <div class="flex flex-wrap items-center gap-3 text-sm mb-2">
         <span class="status-badge ${d.isAvailable ? 'status-available' : 'status-disabled'}">
           <i class="fas fa-${d.isAvailable ? 'check' : 'times'} mr-1 text-xs"></i>${d.isAvailable ? 'Available' : 'Disabled'}</span>
-        <span class="text-zinc-400"><i class="fas fa-weight-hanging mr-1 text-xs"></i>Portion: ${d.portion}</span>
+        <span class="text-zinc-400"><i class="fas fa-weight-hanging mr-1 text-xs"></i>Portion: ${d.portionSize} ${d.portion}</span>
       </div>
       <p class="text-zinc-300 mb-4">${d.description || "No description."}</p>
       <div class="flex flex-wrap gap-3 text-sm">
