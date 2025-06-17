@@ -542,6 +542,7 @@
                 }
             });
 
+            // Fix the toggle functionality in the event listener
             els.listWrap.addEventListener('click', async e => {
                 const btn = e.target.closest('button[data-act]');
                 if (!btn) return;
@@ -553,11 +554,30 @@
                     openModal(dish);
                 } else if (btn.dataset.act === 'del') {
                     if (!confirm(`Are you sure you want to delete "${dish.name}"? This cannot be undone.`)) return;
-                    try { await api(`/api/dishes/${id}`, { method: 'DELETE' }); state.list = state.list.filter(d => d.id != id); render(); }
-                    catch { alert('Delete failed.'); }
+                    try {
+                        await api(`/api/dishes/${id}`, { method: 'DELETE' });
+                        // Reload data after successful delete
+                        await load();
+                    }
+                    catch {
+                        alert('Delete failed.');
+                    }
                 } else if (btn.dataset.act === 'toggle') {
-                    try { await api(`/api/dishes/${id}/availability`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ isAvailable: !dish.isAvailable }) }); dish.isAvailable = !dish.isAvailable; render(); }
-                    catch { alert('Status update failed.'); }
+                    try {
+                        // Call your actual API endpoint for toggling availability
+                        const result = await api(`/api/dishes/${id}/availability`, {
+                            method: 'PATCH'
+                        });
+
+                        // Update local state with the response
+                        dish.available = result.isAvailable; // Note: your DTO uses 'Available' property
+                        dish.isAvailable = result.isAvailable; // Keep both for compatibility
+                        render();
+                    }
+                    catch (error) {
+                        console.error('Status update failed:', error);
+                        alert('Status update failed.');
+                    }
                 }
             });
 
@@ -565,26 +585,26 @@
             async function load() {
                 skeleton(true);
                 try {
-                    // Simulate API call delay
-                    await new Promise(resolve => setTimeout(resolve, 800));
-                    // Mock data for demonstration
-                    state.list = [
-                        { id: 1, name: "Spaghetti Carbonara", price: 14.99, portion: "g", description: "Classic Italian pasta with eggs, cheese, pancetta, and pepper", isAvailable: true, imageUrl: "https://images.unsplash.com/photo-1588013273468-315fd88ea34c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80", orderCount: 42 },
-                        { id: 2, name: "Margherita Pizza", price: 12.50, portion: "pcs", description: "Traditional pizza with tomato sauce, mozzarella, and basil", isAvailable: true, imageUrl: "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80", orderCount: 38 },
-                        { id: 3, name: "Caesar Salad", price: 9.75, portion: "g", description: "Fresh romaine lettuce with Caesar dressing, croutons and parmesan", isAvailable: false, imageUrl: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80", orderCount: 27 },
-                        { id: 4, name: "Grilled Salmon", price: 18.99, portion: "g", description: "Fresh salmon fillet with lemon butter sauce and seasonal vegetables", isAvailable: true, orderCount: 31 },
-                        { id: 5, name: "Chocolate Lava Cake", price: 8.25, portion: "pcs", description: "Warm chocolate cake with molten center, served with vanilla ice cream", isAvailable: true, imageUrl: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80", orderCount: 45 }
-                    ];
+                    // Actually call your API instead of using mock data
+                    const response = await api('/api/dishes/all');
+                    state.list = response; // Use real data from your API
                     render();
                 }
-                catch { alert('Failed to load dishes.'); }
-                finally { skeleton(false); }
+                catch (error) {
+                    console.error('Failed to load dishes:', error);
+                    alert('Failed to load dishes.');
+                }
+                finally {
+                    skeleton(false);
+                }
             }
-
+            // Also update the save function to reload data after saving
             async function save(formData, id) {
                 const method = id ? 'PUT' : 'POST';
                 const url = id ? `/api/dishes/${id}` : '/api/dishes';
                 await api(url, { method, body: formData });
+                // Reload data after successful save
+                await load();
             }
 
             function render() {
