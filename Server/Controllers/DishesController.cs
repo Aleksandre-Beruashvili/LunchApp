@@ -184,9 +184,9 @@ namespace OfficeCafeApp.API.Controllers
                 _context.Dishes.Remove(dish);
                 await _context.SaveChangesAsync();
 
-                return NoContent();
+                return Ok(new { success = true, message = "Dish deleted successfully" });
             }
-            catch
+            catch (Exception ex)
             {
                 return StatusCode(500, "Internal server error");
             }
