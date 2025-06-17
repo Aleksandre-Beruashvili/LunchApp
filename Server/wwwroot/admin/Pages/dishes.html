@@ -612,7 +612,9 @@
                     // Normalize the availability property
                     state.list = response.map(dish => ({
                         ...dish,
-                        isAvailable: dish.available || dish.isAvailable // Use available from DTO or fallback to isAvailable
+                        // Normalize property names from different APIs
+                        portionSize: dish.portionSize ?? dish.PortionSize,
+                        isAvailable: dish.available || dish.isAvailable || dish.IsAvailable
                     }));
                     render();
                 }
@@ -694,7 +696,8 @@
                 if (d) {
                     $('dishId').value = d.id;
                     $('name').value = d.name;
-                    $('portionSize').value = d.portionSize;
+                    // Some API responses may use PascalCase property names
+                    $('portionSize').value = d.portionSize ?? d.PortionSize ?? '';
                     $('portion').value = d.portion;
                     $('price').value = d.price;
                     $('description').value = d.description || '';
