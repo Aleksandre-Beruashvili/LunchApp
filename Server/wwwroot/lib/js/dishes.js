@@ -116,9 +116,15 @@ const DishManager = (() => {
 
         if (d) {
             $("dishId").value = idOf(d);
-            $("name").value = d.name; $("portion").value = d.portion;
-            $("price").value = d.price; $("description").value = d.description || "";
-            if (d.imageUrl) { els.imgWrap.querySelector("img").src = d.imageUrl; els.imgWrap.classList.remove("hidden"); }
+            $("name").value = d.name;
+            $("portionSize").value = d.portionSize ?? d.PortionSize ?? "";
+            $("portion").value = d.portion;
+            $("price").value = d.price;
+            $("description").value = d.description || "";
+            if (d.imageUrl) {
+                els.imgWrap.querySelector("img").src = d.imageUrl;
+                els.imgWrap.classList.remove("hidden");
+            }
         }
 
         els.modal.classList.remove("hidden");
