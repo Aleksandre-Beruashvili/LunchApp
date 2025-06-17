@@ -692,14 +692,14 @@
                 els.modal.querySelector('#modalTitle span').textContent = d ? 'Edit Dish' : 'Add Dish';
 
                 if (d) {
-                    $('dishId').value = d.Id;
-                    $('name').value = d.Name;
-                    $('portionSize').value = d.PortionSize;
-                    $('portion').value = d.Portion;
-                    $('price').value = d.Price;
-                    $('description').value = d.Description || '';
-                    if (d.ImageUrl) {
-                        els.imgWrap.querySelector('img').src = d.ImageUrl;
+                    $('dishId').value = d.id;
+                    $('name').value = d.name;
+                    $('portionSize').value = d.portionSize;
+                    $('portion').value = d.portion;
+                    $('price').value = d.price;
+                    $('description').value = d.description || '';
+                    if (d.imageUrl) {
+                        els.imgWrap.querySelector('img').src = d.imageUrl;
                         els.imgWrap.classList.remove('hidden');
                     }
                 }
