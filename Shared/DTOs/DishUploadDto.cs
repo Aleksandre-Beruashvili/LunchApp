@@ -18,5 +18,9 @@ namespace LunchApp.Shared.DTOs
         [Required(ErrorMessage = "Portion type is required")]
         [RegularExpression("^(g|ml|pcs)$", ErrorMessage = "Portion must be 'g', 'ml' or 'pcs'")]
         public string Portion { get; set; }
+
+        [Required]
+        [Range(0.01, double.MaxValue, ErrorMessage = "Portion size must be greater than 0")]
+        public decimal PortionSize { get; set; } // Actual size
     }
 }

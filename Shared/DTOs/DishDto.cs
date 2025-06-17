@@ -8,7 +8,14 @@
         public decimal Price { get; set; }
         public string ImageUrl { get; set; }
         public bool Available { get; set; }
-        public string Portion { get; set; } 
+        public string Portion { get; set; }
+        public decimal PortionSize { get; set; }
         public int Leftover { get; set; }
+
+        public bool IsAvailable
+        {
+            get => Available;
+            set => Available = value;
+        }
     }
 }

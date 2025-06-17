@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace OfficeCafeApp.API.Models
 {
@@ -25,6 +26,10 @@ namespace OfficeCafeApp.API.Models
         [Required]
         [RegularExpression("^(g|ml|pcs)$", ErrorMessage = "Portion must be 'g', 'ml' or 'pcs'.")]
         public string Portion { get; set; } = "g";
+
+        [Required]
+        [Column(TypeName = "decimal(10,2)")]
+        public decimal PortionSize { get; set; } // Actual size (250, 500, etc.)
 
         public ICollection<MenuSchedule> MenuSchedules { get; set; } = new List<MenuSchedule>();
         public ICollection<OrderItem> OrderItems { get; set; } = new List<OrderItem>();

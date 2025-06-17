@@ -36,7 +36,9 @@ namespace OfficeCafeApp.API.Controllers
                     Price = d.Price,
                     ImageUrl = d.ImageUrl,
                     Portion = d.Portion,
-                    Available = d.IsAvailable
+                    PortionSize = d.PortionSize,
+                    Available = d.IsAvailable,
+                    IsAvailable = d.IsAvailable  // Add this line to ensure both properties are set
                 })
                 .ToListAsync();
 
@@ -61,7 +63,9 @@ namespace OfficeCafeApp.API.Controllers
                         Price = m.Dish.Price,
                         ImageUrl = m.Dish.ImageUrl,
                         Portion = m.Dish.Portion,
-                        Available = m.Dish.IsAvailable
+                        PortionSize = m.Dish.PortionSize,
+                        Available = m.Dish.IsAvailable,
+                        IsAvailable = m.Dish.IsAvailable  // Add this line too
                     })
                     .ToListAsync();
 
@@ -102,6 +106,7 @@ namespace OfficeCafeApp.API.Controllers
                     Description = dto.Description,
                     Price = dto.Price,
                     Portion = dto.Portion,
+                    PortionSize = dto.PortionSize,
                     ImageUrl = imageUrl,
                     IsAvailable = true
                 };
@@ -153,6 +158,7 @@ namespace OfficeCafeApp.API.Controllers
                 dish.Description = dto.Description;
                 dish.Price = dto.Price;
                 dish.Portion = dto.Portion;
+                dish.PortionSize = dto.PortionSize;
 
                 await _context.SaveChangesAsync();
                 return NoContent();
