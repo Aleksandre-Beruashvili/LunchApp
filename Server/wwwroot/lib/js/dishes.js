@@ -9,7 +9,13 @@ const DishManager = (() => {
     const api = (url, opt = {}) => {
         const token = localStorage.getItem("token");
         return fetch(url, { ...opt, headers: { ...opt.headers, Authorization: `Bearer ${token}` } })
-            .then(async r => r.ok ? r.json() : Promise.reject(await r.json().catch(() => ({ status: r.status }))));
+            .then(async r => {
+                if (!r.ok) {
+                    throw await r.json().catch(() => ({ status: r.status }));
+                }
+                if (r.status === 204) return null;
+                return r.json();
+            });
     };
 
     /* ───────── state & cache ───────── */
