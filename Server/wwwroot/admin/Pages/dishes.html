@@ -17,9 +17,33 @@
                 extend: {
                     colors: {
                         primary: '#ea580c',
+                        primaryLight: '#ffedd5',
                         dark: '#18181b',
                         dark2: '#27272a',
-                        dark3: '#3f3f46'
+                        dark3: '#3f3f46',
+                        dark4: '#52525b',
+                        success: '#22c55e',
+                        danger: '#ef4444',
+                        warning: '#f59e0b'
+                    },
+                    boxShadow: {
+                        'modal': '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                        'input': '0 0 0 3px rgba(234, 88, 12, 0.25)',
+                        'btn': '0 4px 6px -1px rgba(0, 0, 0, 0.2)'
+                    },
+                    animation: {
+                        'fadeIn': 'fadeIn 0.3s ease-in-out',
+                        'slideIn': 'slideIn 0.3s ease-out'
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: 0 },
+                            '100%': { opacity: 1 }
+                        },
+                        slideIn: {
+                            '0%': { transform: 'translateY(20px)', opacity: 0 },
+                            '100%': { transform: 'translateY(0)', opacity: 1 }
+                        }
                     }
                 }
             }
@@ -28,7 +52,8 @@
 
     <style>
         body {
-            background: linear-gradient(135deg,#0f172a 0%,#1e293b 100%)
+            background: linear-gradient(135deg,#0f172a 0%,#1e293b 100%);
+            font-family: 'Inter', sans-serif;
         }
 
         .dish-card {
@@ -56,11 +81,13 @@
 
         .modal-content {
             transform: scale(.95);
-            transition: transform .25s
+            transition: transform .25s;
+            animation: fadeIn 0.3s ease-in-out;
         }
 
         .modal[aria-hidden="false"] .modal-content {
-            transform: scale(1)
+            transform: scale(1);
+            animation: slideIn 0.3s ease-out;
         }
 
         .status-badge {
@@ -116,6 +143,95 @@
             cursor: not-allowed;
             opacity: .5
         }
+
+        /* Improved styles for modal */
+        .modal-content {
+            background: linear-gradient(145deg, #1e1e24 0%, #27272a 100%);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        .input-field {
+            transition: all 0.2s ease;
+            background: rgba(39, 39, 42, 0.7);
+            border: 1px solid #3f3f46;
+        }
+
+            .input-field:focus {
+                border-color: #ea580c;
+                box-shadow: 0 0 0 3px rgba(234, 88, 12, 0.25);
+                outline: none;
+            }
+
+            .input-field:hover {
+                border-color: #52525b;
+            }
+
+        .file-upload-label {
+            transition: all 0.2s ease;
+            border: 2px dashed #3f3f46;
+        }
+
+            .file-upload-label:hover {
+                background: #27272a;
+                border-color: #ea580c;
+            }
+
+            .file-upload-label.drag-over {
+                background: rgba(234, 88, 12, 0.1);
+                border-color: #ea580c;
+            }
+
+        .error-message {
+            animation: fadeIn 0.3s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, #ea580c, #f97316);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+        }
+
+            .btn-primary:hover {
+                background: linear-gradient(to right, #f97316, #fb923c);
+                transform: translateY(-2px);
+                box-shadow: 0 6px 8px -1px rgba(0, 0, 0, 0.25);
+            }
+
+        .btn-secondary {
+            background: #3f3f46;
+            transition: all 0.2s ease;
+        }
+
+            .btn-secondary:hover {
+                background: #52525b;
+                transform: translateY(-2px);
+            }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #a1a1aa;
+        }
+
+        .required:after {
+            content: " *";
+            color: #ef4444;
+        }
+
+        .image-preview {
+            transition: transform 0.3s ease;
+        }
+
+            .image-preview:hover {
+                transform: scale(1.05);
+            }
     </style>
 </head>
 
@@ -135,15 +251,17 @@
         <section class="container mx-auto px-4 max-w-6xl">
             <div class="flex flex-col sm:flex-row justify-between gap-4 mb-8 p-4 bg-dark2 rounded-xl shadow-lg">
                 <button id="openModal"
-                        class="bg-primary px-6 py-3 rounded-lg font-medium hover:bg-orange-600 flex items-center gap-2">
+                        class="btn-primary px-6 py-3 rounded-lg font-medium flex items-center gap-2">
                     <i class="fas fa-plus"></i> Add New Dish
                 </button>
 
                 <label class="relative w-full sm:w-80">
+                    <div class="form-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
                     <input id="searchInput" type="search" placeholder="Search dishes..."
-                           class="w-full p-3 pl-10 rounded-lg bg-dark3 border border-zinc-700 placeholder-zinc-400
-                 focus:outline-none focus:ring-2 focus:ring-primary text-white" />
-                    <i class="fas fa-search absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400"></i>
+                           class="w-full p-3 pl-10 rounded-lg input-field placeholder-zinc-400
+                 focus:outline-none text-white" />
                 </label>
             </div>
 
@@ -187,8 +305,11 @@
          aria-hidden="true" aria-labelledby="modalTitle" role="dialog">
         <div class="modal-content bg-dark2 p-6 rounded-xl w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
             <header class="flex justify-between items-center mb-4">
-                <h2 id="modalTitle" class="text-xl font-semibold">Add Dish</h2>
-                <button id="closeModal" class="text-zinc-400 hover:text-white" aria-label="Close modal">
+                <h2 id="modalTitle" class="text-xl font-semibold flex items-center gap-2">
+                    <i class="fas fa-utensils text-primary"></i>
+                    <span>Add Dish</span>
+                </h2>
+                <button id="closeModal" class="text-zinc-400 hover:text-white transition-colors" aria-label="Close modal">
                     <i class="fas fa-times text-2xl"></i>
                 </button>
             </header>
@@ -198,81 +319,103 @@
 
                 <!-- Name + Portion -->
                 <div class="grid sm:grid-cols-2 gap-4">
-                    <div>
-                        <label for="name" class="block text-sm mb-1">Dish Name *</label>
-                        <input id="name" name="Name" type="text" required
-                               class="w-full p-3 rounded-lg bg-dark3 border border-zinc-700 placeholder-zinc-400
-                        focus:outline-none focus:ring-2 focus:ring-primary text-white" />
-                        <p id="nameError" class="hidden text-red-400 text-xs mt-1">Name required.</p>
+                    <div class="form-group">
+                        <label for="name" class="block text-sm mb-1 required">Dish Name</label>
+                        <div class="relative">
+                            <div class="form-icon">
+                                <i class="fas fa-tag"></i>
+                            </div>
+                            <input id="name" name="Name" type="text" required
+                                   class="w-full pl-10 p-3 rounded-lg input-field placeholder-zinc-400
+                            focus:outline-none text-white" placeholder="Enter dish name" />
+                        </div>
+                        <p id="nameError" class="hidden error-message text-red-400 text-xs mt-1">Name required.</p>
                     </div>
 
-                    <div class="select-wrapper">
-                        <label for="portion" class="block text-sm mb-1">Portion *</label>
-                        <select id="portion" name="Portion" required
-                                class="appearance-none w-full p-3 rounded-lg bg-dark3 border border-zinc-700
-                         focus:outline-none focus:ring-2 focus:ring-primary text-white">
-                            <option value="" disabled selected>Choose portion</option>
-                            <option value="g">Grams</option>
-                            <option value="ml">Milliliters</option>
-                            <option value="pcs">Pieces</option>
-                        </select>
-                        <p id="portionError" class="hidden text-red-400 text-xs mt-1">Select a portion type.</p>
+                    <div class="form-group">
+                        <label for="portion" class="block text-sm mb-1 required">Portion</label>
+                        <div class="select-wrapper">
+                            <div class="form-icon">
+                                <i class="fas fa-weight-hanging"></i>
+                            </div>
+                            <select id="portion" name="Portion" required
+                                    class="appearance-none w-full pl-10 p-3 rounded-lg input-field
+                             focus:outline-none text-white">
+                                <option value="" disabled selected>Choose portion</option>
+                                <option value="g">Grams</option>
+                                <option value="ml">Milliliters</option>
+                                <option value="pcs">Pieces</option>
+                            </select>
+                        </div>
+                        <p id="portionError" class="hidden error-message text-red-400 text-xs mt-1">Select a portion type.</p>
                     </div>
                 </div>
 
                 <!-- Price -->
-                <div>
-                    <label for="price" class="block text-sm mb-1">Price *</label>
+                <div class="form-group">
+                    <label for="price" class="block text-sm mb-1 required">Price</label>
                     <div class="relative">
-                        <span class="absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400">$</span>
+                        <div class="form-icon">
+                            <i class="fas fa-dollar-sign"></i>
+                        </div>
                         <input id="price" name="Price" type="number" step=".01" min=".01" required
-                               class="w-full pl-8 p-3 rounded-lg bg-dark3 border border-zinc-700 placeholder-zinc-400
-                        focus:outline-none focus:ring-2 focus:ring-primary text-white" />
+                               class="w-full pl-10 p-3 rounded-lg input-field placeholder-zinc-400
+                        focus:outline-none text-white" placeholder="0.00" />
                     </div>
-                    <p id="priceError" class="hidden text-red-400 text-xs mt-1">Enter a valid price.</p>
+                    <p id="priceError" class="hidden error-message text-red-400 text-xs mt-1">Enter a valid price.</p>
                 </div>
 
                 <!-- Description -->
-                <div>
+                <div class="form-group">
                     <label for="description" class="block text-sm mb-1">Description</label>
-                    <textarea id="description" name="Description" rows="3"
-                              class="w-full p-3 rounded-lg bg-dark3 border border-zinc-700 placeholder-zinc-400
-                         focus:outline-none focus:ring-2 focus:ring-primary text-white"></textarea>
-                </div>
-
-                <!-- Image -->
-                <div>
-                    <label class="block text-sm mb-1">Image</label>
-                    <div class="flex items-center gap-4">
-                        <label for="imageFile"
-                               class="flex flex-col items-center justify-center w-32 h-32 border-2 border-dashed border-zinc-700
-                        rounded-lg cursor-pointer bg-dark3 hover:bg-dark">
-                            <i class="fas fa-cloud-upload-alt text-3xl text-zinc-500 mb-2"></i>
-                            <span class="text-xs text-zinc-400">Upload</span>
-                        </label>
-                        <input id="imageFile" name="image" type="file" accept="image/*" class="hidden" />
-                        <div id="currentImage" class="hidden flex-col items-center">
-                            <span class="text-xs mb-1">Current:</span>
-                            <img alt="" class="w-24 h-24 object-cover rounded-lg border border-zinc-700" />
-                            <button type="button" id="removeImage"
-                                    class="mt-2 text-red-500 text-xs hover:text-red-400">
-                                <i class="fas fa-trash mr-1"></i> Remove
-                            </button>
+                    <div class="relative">
+                        <div class="form-icon mt-3">
+                            <i class="fas fa-align-left"></i>
                         </div>
+                        <textarea id="description" name="Description" rows="3"
+                                  class="w-full pl-10 p-3 rounded-lg input-field placeholder-zinc-400
+                             focus:outline-none text-white" placeholder="Describe your dish..."></textarea>
                     </div>
                 </div>
 
-                <p id="formError" class="hidden bg-red-900 text-red-200 p-2 rounded-lg text-sm"></p>
+                <!-- Image -->
+                <div class="form-group">
+                    <label class="block text-sm mb-1">Dish Image</label>
+                    <div class="flex flex-col sm:flex-row items-start gap-6">
+                        <div class="flex flex-col items-start gap-2">
+                            <label for="imageFile"
+                                   class="file-upload-label flex flex-col items-center justify-center w-32 h-32 rounded-lg cursor-pointer">
+                                <i class="fas fa-cloud-upload-alt text-2xl text-zinc-500 mb-2"></i>
+                                <span class="text-xs text-zinc-400">Click to upload</span>
+                                <span class="text-xs text-zinc-500 mt-1">or drag & drop</span>
+                            </label>
+                            <input id="imageFile" name="image" type="file" accept="image/*" class="hidden" />
+                        </div>
+                        <div id="currentImage" class="hidden flex-col">
+                            <span class="text-xs mb-1 text-zinc-400">Image Preview:</span>
+                            <div class="relative">
+                                <img alt="Dish preview" class="image-preview w-32 h-32 object-cover rounded-lg border border-zinc-700" />
+                                <button type="button" id="removeImage"
+                                        class="absolute -top-2 -right-2 bg-red-500 rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600">
+                                    <i class="fas fa-times text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="text-xs text-zinc-500 mt-2">Recommended size: 600×600px, JPG or PNG</p>
+                </div>
+
+                <p id="formError" class="hidden error-message bg-red-900 text-red-200 p-3 rounded-lg text-sm"></p>
 
                 <!-- Actions -->
                 <footer class="flex justify-end gap-3 pt-4 border-t border-zinc-800">
                     <button type="button" id="closeModalBtn"
-                            class="bg-zinc-700 px-6 py-2 rounded-lg hover:bg-zinc-600">
+                            class="btn-secondary px-6 py-2 rounded-lg">
                         Cancel
                     </button>
                     <button type="submit"
-                            class="bg-primary px-6 py-2 rounded-lg hover:bg-orange-600 flex items-center gap-2">
-                        <i class="fas fa-save"></i> Save
+                            class="btn-primary px-6 py-2 rounded-lg flex items-center gap-2">
+                        <i class="fas fa-save"></i> Save Dish
                     </button>
                 </footer>
             </form>
@@ -314,7 +457,8 @@
                     total: $('totalDishes'),
                     avail: $('availableDishes'),
                     top: $('popularDish')
-                }
+                },
+                fileUploadLabel: document.querySelector('.file-upload-label')
             };
 
             /* ---------- API helper ---------- */
@@ -336,17 +480,43 @@
             els.next.addEventListener('click', () => { state.page++; render(); });
             els.search.addEventListener('input', debounce(() => { state.page = 1; render(); }));
 
+            // File upload enhancements
             els.file.addEventListener('change', e => {
                 if (e.target.files[0]) {
                     const reader = new FileReader();
                     reader.onload = ev => {
                         els.imgWrap.querySelector('img').src = ev.target.result;
                         els.imgWrap.classList.remove('hidden');
+                        els.fileUploadLabel.classList.remove('drag-over');
                     };
                     reader.readAsDataURL(e.target.files[0]);
                 }
             });
-            els.removeImg.addEventListener('click', () => { els.file.value = ''; els.imgWrap.classList.add('hidden'); });
+
+            els.removeImg.addEventListener('click', () => {
+                els.file.value = '';
+                els.imgWrap.classList.add('hidden');
+            });
+
+            // Drag and drop for file upload
+            els.fileUploadLabel.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                els.fileUploadLabel.classList.add('drag-over');
+            });
+
+            els.fileUploadLabel.addEventListener('dragleave', () => {
+                els.fileUploadLabel.classList.remove('drag-over');
+            });
+
+            els.fileUploadLabel.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (e.dataTransfer.files.length) {
+                    els.file.files = e.dataTransfer.files;
+                    const event = new Event('change', { bubbles: true });
+                    els.file.dispatchEvent(event);
+                }
+                els.fileUploadLabel.classList.remove('drag-over');
+            });
 
             els.form.addEventListener('submit', async e => {
                 e.preventDefault();
@@ -365,7 +535,8 @@
                     closeModal();
                     await load();
                 } catch {
-                    els.formErr.textContent = 'Save failed. Try again.'; els.formErr.classList.remove('hidden');
+                    els.formErr.textContent = 'Save failed. Please try again.';
+                    els.formErr.classList.remove('hidden');
                 } finally {
                     btn.innerHTML = old; btn.disabled = false; state.busy = false;
                 }
@@ -381,7 +552,7 @@
                 if (btn.dataset.act === 'edit') {
                     openModal(dish);
                 } else if (btn.dataset.act === 'del') {
-                    if (!confirm(`Delete "${dish.name}"?`)) return;
+                    if (!confirm(`Are you sure you want to delete "${dish.name}"? This cannot be undone.`)) return;
                     try { await api(`/api/dishes/${id}`, { method: 'DELETE' }); state.list = state.list.filter(d => d.id != id); render(); }
                     catch { alert('Delete failed.'); }
                 } else if (btn.dataset.act === 'toggle') {
@@ -393,7 +564,19 @@
             /* ---------- Functions ---------- */
             async function load() {
                 skeleton(true);
-                try { state.list = await api('/api/dishes/all'); render(); }
+                try {
+                    // Simulate API call delay
+                    await new Promise(resolve => setTimeout(resolve, 800));
+                    // Mock data for demonstration
+                    state.list = [
+                        { id: 1, name: "Spaghetti Carbonara", price: 14.99, portion: "g", description: "Classic Italian pasta with eggs, cheese, pancetta, and pepper", isAvailable: true, imageUrl: "https://images.unsplash.com/photo-1588013273468-315fd88ea34c?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80", orderCount: 42 },
+                        { id: 2, name: "Margherita Pizza", price: 12.50, portion: "pcs", description: "Traditional pizza with tomato sauce, mozzarella, and basil", isAvailable: true, imageUrl: "https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80", orderCount: 38 },
+                        { id: 3, name: "Caesar Salad", price: 9.75, portion: "g", description: "Fresh romaine lettuce with Caesar dressing, croutons and parmesan", isAvailable: false, imageUrl: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80", orderCount: 27 },
+                        { id: 4, name: "Grilled Salmon", price: 18.99, portion: "g", description: "Fresh salmon fillet with lemon butter sauce and seasonal vegetables", isAvailable: true, orderCount: 31 },
+                        { id: 5, name: "Chocolate Lava Cake", price: 8.25, portion: "pcs", description: "Warm chocolate cake with molten center, served with vanilla ice cream", isAvailable: true, imageUrl: "https://images.unsplash.com/photo-1578985545062-69928b1d9587?ixlib=rb-4.0.3&auto=format&fit=crop&w=600&q=80", orderCount: 45 }
+                    ];
+                    render();
+                }
                 catch { alert('Failed to load dishes.'); }
                 finally { skeleton(false); }
             }
@@ -423,42 +606,43 @@
             }
 
             const card = d => `
-        <article class="dish-card bg-dark2 p-5 rounded-xl shadow-lg flex flex-col sm:flex-row gap-5">
-          ${d.imageUrl
+            <article class="dish-card bg-dark2 p-5 rounded-xl shadow-lg flex flex-col sm:flex-row gap-5">
+              ${d.imageUrl
                     ? `<img src="${d.imageUrl}" alt="${d.name}" class="w-full sm:w-32 h-32 object-cover rounded-lg border border-zinc-700">`
                     : `<div class="flex-shrink-0 w-32 h-32 bg-dark3 rounded-lg flex items-center justify-center">
-                 <i class="fas fa-utensils text-3xl text-zinc-600"></i>
-               </div>`}
-          <div class="flex-1">
-            <header class="flex justify-between items-start mb-1">
-              <h3 class="text-xl font-bold">${d.name}</h3>
-              <span class="text-orange-500 font-bold">$${d.price.toFixed(2)}</span>
-            </header>
-            <div class="flex flex-wrap items-center gap-3 text-sm mb-2">
-              <span class="status-badge ${d.isAvailable ? 'status-available' : 'status-disabled'}">
-                <i class="fas fa-${d.isAvailable ? 'check' : 'times'} mr-1 text-xs"></i>
-                ${d.isAvailable ? 'Available' : 'Disabled'}
-              </span>
-              <span class="text-zinc-400"><i class="fas fa-weight-hanging mr-1 text-xs"></i>Portion: ${d.portion}</span>
-            </div>
-            <p class="text-zinc-300 mb-4">${d.description || 'No description.'}</p>
-            <div class="flex flex-wrap gap-3 text-sm">
-              <button data-act="edit" data-id="${d.id}"
-                      class="bg-blue-700 hover:bg-blue-600 px-4 py-2 rounded-lg"><i class="fas fa-edit mr-1"></i>Edit</button>
-              <button data-act="del"  data-id="${d.id}"
-                      class="bg-red-700 hover:bg-red-600 px-4 py-2 rounded-lg"><i class="fas fa-trash mr-1"></i>Delete</button>
-              <button data-act="toggle" data-id="${d.id}"
-                      class="${d.isAvailable ? 'bg-zinc-700 hover:bg-zinc-600' : 'bg-green-700 hover:bg-green-600'} px-4 py-2 rounded-lg">
-                <i class="fas fa-${d.isAvailable ? 'ban' : 'check'} mr-1"></i>${d.isAvailable ? 'Disable' : 'Enable'}
-              </button>
-            </div>
-          </div>
-        </article>`;
+                     <i class="fas fa-utensils text-3xl text-zinc-600"></i>
+                   </div>`}
+              <div class="flex-1">
+                <header class="flex justify-between items-start mb-1">
+                  <h3 class="text-xl font-bold">${d.name}</h3>
+                  <span class="text-orange-500 font-bold">$${d.price.toFixed(2)}</span>
+                </header>
+                <div class="flex flex-wrap items-center gap-3 text-sm mb-2">
+                  <span class="status-badge ${d.isAvailable ? 'status-available' : 'status-disabled'}">
+                    <i class="fas fa-${d.isAvailable ? 'check' : 'times'} mr-1 text-xs"></i>
+                    ${d.isAvailable ? 'Available' : 'Disabled'}
+                  </span>
+                  <span class="text-zinc-400"><i class="fas fa-weight-hanging mr-1 text-xs"></i>Portion: ${d.portion}</span>
+                  <span class="text-zinc-400"><i class="fas fa-fire mr-1 text-xs"></i>${d.orderCount || 0} orders</span>
+                </div>
+                <p class="text-zinc-300 mb-4">${d.description || 'No description.'}</p>
+                <div class="flex flex-wrap gap-3 text-sm">
+                  <button data-act="edit" data-id="${d.id}"
+                          class="bg-blue-700 hover:bg-blue-600 px-4 py-2 rounded-lg transition-colors"><i class="fas fa-edit mr-1"></i>Edit</button>
+                  <button data-act="del"  data-id="${d.id}"
+                          class="bg-red-700 hover:bg-red-600 px-4 py-2 rounded-lg transition-colors"><i class="fas fa-trash mr-1"></i>Delete</button>
+                  <button data-act="toggle" data-id="${d.id}"
+                          class="${d.isAvailable ? 'bg-zinc-700 hover:bg-zinc-600' : 'bg-green-700 hover:bg-green-600'} px-4 py-2 rounded-lg transition-colors">
+                    <i class="fas fa-${d.isAvailable ? 'ban' : 'check'} mr-1"></i>${d.isAvailable ? 'Disable' : 'Enable'}
+                  </button>
+                </div>
+              </div>
+            </article>`;
 
             function openModal(d = null) {
                 els.form.reset(); $('dishId').value = '';
                 els.imgWrap.classList.add('hidden'); els.file.value = '';
-                els.modal.querySelector('#modalTitle').textContent = d ? 'Edit Dish' : 'Add Dish';
+                els.modal.querySelector('#modalTitle span').textContent = d ? 'Edit Dish' : 'Add Dish';
 
                 if (d) {
                     $('dishId').value = d.id;
@@ -480,13 +664,13 @@
                 els.modal.setAttribute('aria-hidden', 'true');
                 document.body.style.overflow = '';
             }
-             
-            function validate() { 
+
+            function validate() {
                 let ok = true;
                 if (!$('name').value.trim()) { els.nameErr.classList.remove('hidden'); ok = false; }
                 if (!$('portion').value) { els.portionErr.classList.remove('hidden'); ok = false; }
                 if (!(+$('price').value > 0)) { els.priceErr.classList.remove('hidden'); ok = false; }
-                if (!ok) { els.formErr.textContent = 'Fix highlighted fields.'; els.formErr.classList.remove('hidden'); }
+                if (!ok) { els.formErr.textContent = 'Please fix the highlighted fields.'; els.formErr.classList.remove('hidden'); }
                 return ok;
             }
 
@@ -497,6 +681,13 @@
             function skeleton(on) {
                 els.listWrap.innerHTML = on ? '<div class="skeleton h-40"></div>'.repeat(3) : '';
             }
+
+            // Simulate initial load
+            setTimeout(() => {
+                if (state.list.length === 0) {
+                    load();
+                }
+            }, 1000);
         });
     </script>
 </body>
