@@ -84,7 +84,7 @@
 
             // 2) dynamically import the matching JS module
             try {
-                const module = await import(`./js/${page}.js`);
+                const module = await import(`../lib/js/${page}.js`);
                 console.log(`${page}.js loaded`, module);
                 module.init();
             } catch (err) {
